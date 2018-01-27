@@ -498,26 +498,46 @@
         });
         /* harmony import */
         var __WEBPACK_IMPORTED_MODULE_0_common_micro_libs_src_jsutils_dataStore__ = __webpack_require__(3);
+        var _fixBabelExtend = function(O) {
+            var gPO = O.getPrototypeOf || function(o) {
+                return o.__proto__;
+            }, sPO = O.setPrototypeOf || function(o, p) {
+                o.__proto__ = p;
+                return o;
+            }, construct = "object" === ("undefined" === typeof Reflect ? "undefined" : babelHelpers.typeof(Reflect)) ? Reflect.construct : function(Parent, args, Class) {
+                var Constructor, a = [ null ];
+                a.push.apply(a, args);
+                Constructor = Parent.bind.apply(Parent, a);
+                return sPO(new Constructor(), Class.prototype);
+            };
+            return function(Class) {
+                var Parent = gPO(Class);
+                return sPO(Class, sPO(function() {
+                    return construct(Parent, arguments, gPO(this).constructor);
+                }, Parent));
+            };
+        }(Object);
         //============================================================================
         var PRIVATE = __WEBPACK_IMPORTED_MODULE_0_common_micro_libs_src_jsutils_dataStore__.a.create();
         /**
  * A generic class for building widgets based on HTML Custom Elements.
  *
  */
-        var ComponentElement = function(_HTMLElement) {
+        var ComponentElement = _fixBabelExtend(function(_HTMLElement) {
             babelHelpers.inherits(ComponentElement, _HTMLElement);
-            function ComponentElement(inst) {
-                var _this, _ret;
+            function ComponentElement() {
+                var _ref;
+                var _ret;
                 babelHelpers.classCallCheck(this, ComponentElement);
-                inst = (_this = babelHelpers.possibleConstructorReturn(this, (ComponentElement.__proto__ || Object.getPrototypeOf(ComponentElement)).call(this, inst)), 
-                _this);
-                var state = getInstanceState(inst);
-                state.content = _this.constructor.useShadow ? inst.attachShadow({
-                    mode: open
-                }) : inst;
+                for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) args[_key] = arguments[_key];
+                var _this = babelHelpers.possibleConstructorReturn(this, (_ref = ComponentElement.__proto__ || Object.getPrototypeOf(ComponentElement)).call.apply(_ref, [ this ].concat(args)));
+                var state = getInstanceState(_this);
+                state.content = _this.constructor.useShadow ? _this.attachShadow({
+                    mode: "open"
+                }) : _this;
                 state.content.innerHTML = _this.constructor.template;
-                inst.init();
-                return _ret = inst, babelHelpers.possibleConstructorReturn(_this, _ret);
+                _this.init();
+                return _ret = _this, babelHelpers.possibleConstructorReturn(_this, _ret);
             }
             //==============================================================
             //  Static Members
@@ -592,7 +612,7 @@
                     // the element is no longer needed.
                     if (PRIVATE.has(this)) {
                         var state = getInstanceState(this);
-                        state.destroyQueued || (state.destroyQueued = setTimeout(this.destroy.bind(this), this.constructor.autoDestroyDelay));
+                        state.destroyQueued || (state.destroyQueued = setTimeout(this.destroy.bind(this), this.constructor.delayDestroy));
                     }
                 }
             } ], [ {
@@ -625,7 +645,7 @@
                 }
             } ]);
             return ComponentElement;
-        }(HTMLElement);
+        }(HTMLElement));
         /* harmony default export */
         __webpack_exports__.default = ComponentElement;
         function getInstanceState(instance) {

@@ -8,16 +8,13 @@ const PRIVATE = dataStore.create();
  *
  */
 export class ComponentElement extends HTMLElement {
-    constructor(inst) {
-        inst = super(inst);
-
-        const state = getInstanceState(inst);
-
-        state.content = this.constructor.useShadow ? inst.attachShadow({ mode: open }) : inst;
+    constructor(...args) {
+        super(...args);
+        const state = getInstanceState(this);
+        state.content = this.constructor.useShadow ? this.attachShadow({ mode: "open" }) : this;
         state.content.innerHTML = this.constructor.template;
-
-        inst.init();
-        return inst;
+        this.init();
+        return this;
     }
 
     //==============================================================
@@ -150,7 +147,7 @@ export class ComponentElement extends HTMLElement {
         if (PRIVATE.has(this)) {
             const state = getInstanceState(this);
             if (!state.destroyQueued) {
-                state.destroyQueued = setTimeout(this.destroy.bind(this), this.constructor.autoDestroyDelay);
+                state.destroyQueued = setTimeout(this.destroy.bind(this), this.constructor.delayDestroy);
             }
         }
     }
