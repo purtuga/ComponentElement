@@ -1,0 +1,32 @@
+{
+  "name": "component-element",
+  "version": "1.0.0",
+  "description": "A Custom Element based component to build widgets for the web (not frameworks)",
+  "main": "src/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "webpack --config node_modules/Base/configs/webpack.dev.js",
+    "build:prod": "webpack --config node_modules/Base/configs/webpack.prod.js",
+    "build:prod:min": "webpack --config node_modules/Base/configs/webpack.prod.uglify.js",
+    "dist": "npm run build:prod&&npm run build:prod:min"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/purtuga/ComponentElement.git"
+  },
+  "keywords": [
+    "CustomElement",
+    "component",
+    "element",
+    "webcomponents"
+  ],
+  "author": "Paul Tavares",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/purtuga/ComponentElement/issues"
+  },
+  "homepage": "https://github.com/purtuga/ComponentElement#readme",
+  "devDependencies": {
+    "base": "github:purtuga/Base"
+  }
+}
