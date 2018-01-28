@@ -28,7 +28,7 @@
     },
     "homepage": "https://github.com/purtuga/ComponentElement#readme",
     "devDependencies": {
+        "babel-plugin-transform-decorators-legacy": "^1.3.4",
         "base": "github:purtuga/Base"
-    },
-    "dependencies": {}
+    }
 }
