@@ -4,6 +4,8 @@ import {
 } from "./utils"
 
 //============================================================================
+const SHADOW_DOM_SUPPORTED = document.head.createShadowRoot || document.head.attachShadow;
+
 
 /**
  * A generic class for building widgets based on HTML Custom Elements.
@@ -13,7 +15,7 @@ export class ComponentElement extends HTMLElement {
     constructor(...args) {
         super(...args);
         const state = getInstanceState(this);
-        state.content = this.constructor.useShadow ? this.attachShadow({ mode: "open" }) : this;
+        state.content = this.constructor.useShadow && SHADOW_DOM_SUPPORTED ? this.attachShadow({ mode: "open" }) : this;
         state.content.innerHTML = this.constructor.template;
         this.init();
         return this;
@@ -63,7 +65,7 @@ export class ComponentElement extends HTMLElement {
     // Returns the list of props that were marked as `@attr`
     static get observedAttributes() {
         return Object
-            .keys(this.__props)
+            .keys(this.__props || {})
             .filter(p => this.__props[p].attr)
             .map(p => p.toLowerCase());
 

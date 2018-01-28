@@ -7,7 +7,6 @@ A base class for building Widgets using CustomElements
 ```javascript
 import {ComponentElement, prop} from "component-element";
 
-
 export default class MyWidget extends ComponentElement {
     static get tagName() { return "my-widget"; }
     static get template() {
@@ -41,7 +40,7 @@ Include a [polyfill](https://github.com/WebReflection/document-register-element)
 
 ## Props
 
-Props can be defined using the `prop` decorator. Props defined this way are automatically reflected in `state.props`. The decorator can also be used to set props as being able to be defined via HTML attributes.
+Props can be defined using the `prop` decorator. Props defined this way are automatically reflected in `state.props`. The decorator can also be used to set props as being able to be defined via HTML attributes. When defined as an attribute, that attribute must be defined as all lower case - example: a prop named `listName` set an attribute, will need to be defined as `listname`.
 
 ## License
 

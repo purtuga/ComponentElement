@@ -107,13 +107,214 @@
         /******/
         // Load entry module and return exports
         /******/
-        return __webpack_require__(__webpack_require__.s = 0);
+        return __webpack_require__(__webpack_require__.s = 2);
     }([ /* 0 */
     /***/
-    function(module, exports, __webpack_require__) {
-        __webpack_require__(1);
-        module.exports = __webpack_require__(2);
+    function(module, __webpack_exports__, __webpack_require__) {
+        "use strict";
+        /* harmony export (binding) */
+        __webpack_require__.d(__webpack_exports__, "a", function() {
+            return ComponentElement;
+        });
+        /* harmony import */
+        var __WEBPACK_IMPORTED_MODULE_0__utils__ = __webpack_require__(1);
+        var _fixBabelExtend = function(O) {
+            var gPO = O.getPrototypeOf || function(o) {
+                return o.__proto__;
+            }, sPO = O.setPrototypeOf || function(o, p) {
+                o.__proto__ = p;
+                return o;
+            }, construct = "object" === ("undefined" === typeof Reflect ? "undefined" : babelHelpers.typeof(Reflect)) ? Reflect.construct : function(Parent, args, Class) {
+                var Constructor, a = [ null ];
+                a.push.apply(a, args);
+                Constructor = Parent.bind.apply(Parent, a);
+                return sPO(new Constructor(), Class.prototype);
+            };
+            return function(Class) {
+                var Parent = gPO(Class);
+                return sPO(Class, sPO(function() {
+                    return construct(Parent, arguments, gPO(this).constructor);
+                }, Parent));
+            };
+        }(Object);
+        //============================================================================
+        var SHADOW_DOM_SUPPORTED = document.head.createShadowRoot || document.head.attachShadow;
+        /**
+ * A generic class for building widgets based on HTML Custom Elements.
+ *
+ */
+        var ComponentElement = _fixBabelExtend(function(_HTMLElement) {
+            babelHelpers.inherits(ComponentElement, _HTMLElement);
+            function ComponentElement() {
+                var _ref;
+                var _ret;
+                babelHelpers.classCallCheck(this, ComponentElement);
+                for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) args[_key] = arguments[_key];
+                var _this = babelHelpers.possibleConstructorReturn(this, (_ref = ComponentElement.__proto__ || Object.getPrototypeOf(ComponentElement)).call.apply(_ref, [ this ].concat(args)));
+                var state = Object(__WEBPACK_IMPORTED_MODULE_0__utils__.b)(_this);
+                state.content = _this.constructor.useShadow && SHADOW_DOM_SUPPORTED ? _this.attachShadow({
+                    mode: "open"
+                }) : _this;
+                state.content.innerHTML = _this.constructor.template;
+                _this.init();
+                return _ret = _this, babelHelpers.possibleConstructorReturn(_this, _ret);
+            }
+            //==============================================================
+            //  Static Members
+            //==============================================================
+            /**
+     * Return default registration tag name
+     *
+     * @return {String}
+     */
+            babelHelpers.createClass(ComponentElement, [ {
+                key: "attributeChangedCallback",
+                //==============================================================
+                //  Instance Members
+                //==============================================================
+                value: function(name, oldValue, newValue) {
+                    Object.keys(this.constructor.__props).some(function(propName) {
+                        if (propName.toLowerCase() === name) {
+                            name = propName;
+                            return true;
+                        }
+                    });
+                    // set the value to stat.props
+                    Object(__WEBPACK_IMPORTED_MODULE_0__utils__.b)(this).props[name] = newValue;
+                }
+            }, {
+                key: "destroy",
+                value: function() {
+                    if (__WEBPACK_IMPORTED_MODULE_0__utils__.a.has(this)) {
+                        var state = Object(__WEBPACK_IMPORTED_MODULE_0__utils__.b)(this);
+                        __WEBPACK_IMPORTED_MODULE_0__utils__.a.delete(this);
+                        if (state.destroyQueued) {
+                            clearTimeout(state.destroyQueued);
+                            state.destroyQueued = null;
+                        }
+                        state.destroyCallbacks.splice(0).forEach(function(cb) {
+                            return cb();
+                        });
+                    }
+                }
+            }, {
+                key: "onDestroy",
+                value: function(callback) {
+                    Object(__WEBPACK_IMPORTED_MODULE_0__utils__.b)(this).destroyCallbacks.push(callback);
+                }
+            }, {
+                key: "init",
+                value: function() {}
+            }, {
+                key: "ready",
+                value: function() {}
+            }, {
+                key: "mounted",
+                value: function() {}
+            }, {
+                key: "unmounted",
+                value: function() {}
+            }, {
+                key: "emit",
+                value: function(eventName, data) {
+                    this.dispatchEvent(new CustomEvent(eventName, {
+                        detail: data
+                    }));
+                }
+            }, {
+                key: "connectedCallback",
+                value: function() {
+                    // Cancel destroy if it is queued
+                    if (__WEBPACK_IMPORTED_MODULE_0__utils__.a.has(this)) {
+                        var state = Object(__WEBPACK_IMPORTED_MODULE_0__utils__.b)(this);
+                        if (state.destroyQueued) {
+                            clearTimeout(state.destroyQueued);
+                            state.destroyQueued = null;
+                        }
+                    }
+                }
+            }, {
+                key: "disconnectedCallback",
+                value: function() {
+                    // Delay calling .destroy() by 60s, just in case user re-attaches component back to dom.
+                    // This seems to be currently the only way to ensure attached `onDestroy` logic run when
+                    // the element is no longer needed.
+                    if (__WEBPACK_IMPORTED_MODULE_0__utils__.a.has(this)) {
+                        var state = Object(__WEBPACK_IMPORTED_MODULE_0__utils__.b)(this);
+                        state.destroyQueued || (state.destroyQueued = setTimeout(this.destroy.bind(this), this.constructor.delayDestroy));
+                    }
+                }
+            } ], [ {
+                key: "define",
+                /**
+         * Registers the web component. Uses tagName as default input param
+         */
+                value: function(name) {
+                    customElements.define(name || this.tagName, this);
+                }
+            }, {
+                key: "tagName",
+                get: function() {
+                    throw new Error("tagName not defined");
+                }
+            }, {
+                key: "delayDestroy",
+                get: function() {
+                    return 3e4;
+                }
+            }, {
+                key: "useShadow",
+                get: function() {
+                    return true;
+                }
+            }, {
+                key: "template",
+                get: function() {
+                    return "<div></div>";
+                }
+            }, {
+                key: "observedAttributes",
+                get: function() {
+                    var _this2 = this;
+                    return Object.keys(this.__props || {}).filter(function(p) {
+                        return _this2.__props[p].attr;
+                    }).map(function(p) {
+                        return p.toLowerCase();
+                    });
+                }
+            } ]);
+            return ComponentElement;
+        }(HTMLElement));
     }, /* 1 */
+    /***/
+    function(module, __webpack_exports__, __webpack_require__) {
+        "use strict";
+        /* harmony export (binding) */
+        __webpack_require__.d(__webpack_exports__, "a", function() {
+            return PRIVATE;
+        });
+        /* harmony export (immutable) */
+        __webpack_exports__.b = getInstanceState;
+        /* harmony import */
+        var __WEBPACK_IMPORTED_MODULE_0_common_micro_libs_src_jsutils_dataStore__ = __webpack_require__(5);
+        //============================================================================
+        var PRIVATE = __WEBPACK_IMPORTED_MODULE_0_common_micro_libs_src_jsutils_dataStore__.a.create();
+        function getInstanceState(instance) {
+            PRIVATE.has(instance) || PRIVATE.set(instance, {
+                ready: false,
+                props: {},
+                content: null,
+                destroyCallbacks: [],
+                destroyQueued: null
+            });
+            return PRIVATE.get(instance);
+        }
+    }, /* 2 */
+    /***/
+    function(module, exports, __webpack_require__) {
+        __webpack_require__(3);
+        module.exports = __webpack_require__(4);
+    }, /* 3 */
     /***/
     function(module, exports) {
         !function(global) {
@@ -485,180 +686,30 @@
                 return Array.from(arr);
             };
         }("undefined" === typeof global ? self : global);
-    }, /* 2 */
+    }, /* 4 */
     /***/
     function(module, __webpack_exports__, __webpack_require__) {
         "use strict";
         Object.defineProperty(__webpack_exports__, "__esModule", {
             value: true
         });
-        /* harmony export (binding) */
+        /* harmony import */
+        var __WEBPACK_IMPORTED_MODULE_0__ComponentElement__ = __webpack_require__(0);
+        /* harmony namespace reexport (by provided) */
         __webpack_require__.d(__webpack_exports__, "ComponentElement", function() {
-            return ComponentElement;
+            return __WEBPACK_IMPORTED_MODULE_0__ComponentElement__.a;
         });
         /* harmony import */
-        var __WEBPACK_IMPORTED_MODULE_0_common_micro_libs_src_jsutils_dataStore__ = __webpack_require__(3);
-        var _fixBabelExtend = function(O) {
-            var gPO = O.getPrototypeOf || function(o) {
-                return o.__proto__;
-            }, sPO = O.setPrototypeOf || function(o, p) {
-                o.__proto__ = p;
-                return o;
-            }, construct = "object" === ("undefined" === typeof Reflect ? "undefined" : babelHelpers.typeof(Reflect)) ? Reflect.construct : function(Parent, args, Class) {
-                var Constructor, a = [ null ];
-                a.push.apply(a, args);
-                Constructor = Parent.bind.apply(Parent, a);
-                return sPO(new Constructor(), Class.prototype);
-            };
-            return function(Class) {
-                var Parent = gPO(Class);
-                return sPO(Class, sPO(function() {
-                    return construct(Parent, arguments, gPO(this).constructor);
-                }, Parent));
-            };
-        }(Object);
-        //============================================================================
-        var PRIVATE = __WEBPACK_IMPORTED_MODULE_0_common_micro_libs_src_jsutils_dataStore__.a.create();
-        /**
- * A generic class for building widgets based on HTML Custom Elements.
- *
- */
-        var ComponentElement = _fixBabelExtend(function(_HTMLElement) {
-            babelHelpers.inherits(ComponentElement, _HTMLElement);
-            function ComponentElement() {
-                var _ref;
-                var _ret;
-                babelHelpers.classCallCheck(this, ComponentElement);
-                for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) args[_key] = arguments[_key];
-                var _this = babelHelpers.possibleConstructorReturn(this, (_ref = ComponentElement.__proto__ || Object.getPrototypeOf(ComponentElement)).call.apply(_ref, [ this ].concat(args)));
-                var state = getInstanceState(_this);
-                state.content = _this.constructor.useShadow ? _this.attachShadow({
-                    mode: "open"
-                }) : _this;
-                state.content.innerHTML = _this.constructor.template;
-                _this.init();
-                return _ret = _this, babelHelpers.possibleConstructorReturn(_this, _ret);
-            }
-            //==============================================================
-            //  Static Members
-            //==============================================================
-            /**
-     * Return default registration tag name
-     *
-     * @return {String}
-     */
-            babelHelpers.createClass(ComponentElement, [ {
-                key: "destroy",
-                //==============================================================
-                //  Instance Members
-                //==============================================================
-                /**
-         * Destroy the instance of the widget
-         */
-                value: function() {
-                    if (PRIVATE.has(this)) {
-                        var state = getInstanceState(this);
-                        PRIVATE.delete(this);
-                        if (state.destroyQueued) {
-                            clearTimeout(state.destroyQueued);
-                            state.destroyQueued = null;
-                        }
-                        state.destroyCallbacks.splice(0).forEach(function(cb) {
-                            return cb();
-                        });
-                    }
-                }
-            }, {
-                key: "onDestroy",
-                value: function(callback) {
-                    getInstanceState(this).destroyCallbacks.push(callback);
-                }
-            }, {
-                key: "init",
-                value: function() {}
-            }, {
-                key: "ready",
-                value: function() {}
-            }, {
-                key: "mounted",
-                value: function() {}
-            }, {
-                key: "unmounted",
-                value: function() {}
-            }, {
-                key: "emit",
-                value: function(eventName, data) {
-                    this.dispatchEvent(new CustomEvent(eventName, {
-                        detail: data
-                    }));
-                }
-            }, {
-                key: "connectedCallback",
-                value: function() {
-                    // Cancel destroy if it is queued
-                    if (PRIVATE.has(this)) {
-                        var state = getInstanceState(this);
-                        if (state.destroyQueued) {
-                            clearTimeout(state.destroyQueued);
-                            state.destroyQueued = null;
-                        }
-                    }
-                }
-            }, {
-                key: "disconnectedCallback",
-                value: function() {
-                    // Delay calling .destroy() by 60s, just in case user re-attaches component back to dom.
-                    // This seems to be currently the only way to ensure attached `onDestroy` logic run when
-                    // the element is no longer needed.
-                    if (PRIVATE.has(this)) {
-                        var state = getInstanceState(this);
-                        state.destroyQueued || (state.destroyQueued = setTimeout(this.destroy.bind(this), this.constructor.delayDestroy));
-                    }
-                }
-            } ], [ {
-                key: "define",
-                /**
-         * Registers the web component. Uses tagName as default input param
-         */
-                value: function(name) {
-                    customElements.define(name || this.tagName, this);
-                }
-            }, {
-                key: "tagName",
-                get: function() {
-                    throw new Error("tagName not defined");
-                }
-            }, {
-                key: "delayDestroy",
-                get: function() {
-                    return 3e4;
-                }
-            }, {
-                key: "useShadow",
-                get: function() {
-                    return true;
-                }
-            }, {
-                key: "template",
-                get: function() {
-                    return "<div></div>";
-                }
-            } ]);
-            return ComponentElement;
-        }(HTMLElement));
-        /* harmony default export */
-        __webpack_exports__.default = ComponentElement;
-        function getInstanceState(instance) {
-            PRIVATE.has(instance) || PRIVATE.set(instance, {
-                ready: false,
-                props: {},
-                content: null,
-                destroyCallbacks: [],
-                destroyQueued: null
-            });
-            return PRIVATE.get(instance);
-        }
-    }, /* 3 */
+        var __WEBPACK_IMPORTED_MODULE_1__decorators__ = __webpack_require__(6);
+        /* harmony namespace reexport (by provided) */
+        __webpack_require__.d(__webpack_exports__, "prop", function() {
+            return __WEBPACK_IMPORTED_MODULE_1__decorators__.a;
+        });
+        /* harmony reexport (binding) */
+        __webpack_require__.d(__webpack_exports__, "default", function() {
+            return __WEBPACK_IMPORTED_MODULE_0__ComponentElement__.a;
+        });
+    }, /* 5 */
     /***/
     function(module, __webpack_exports__, __webpack_require__) {
         "use strict";
@@ -733,6 +784,121 @@
         };
         /* harmony default export */
         __webpack_exports__.a = dataStore;
+    }, /* 6 */
+    /***/
+    function(module, __webpack_exports__, __webpack_require__) {
+        "use strict";
+        /* harmony export (immutable) */
+        __webpack_exports__.a = prop;
+        /* harmony import */
+        var __WEBPACK_IMPORTED_MODULE_0__utils__ = __webpack_require__(1);
+        /* harmony import */
+        var __WEBPACK_IMPORTED_MODULE_1_common_micro_libs_src_jsutils_objectExtend__ = __webpack_require__(7);
+        /**
+ * Create a ComponentElement property.
+ * The property has the following characteristics:
+ *
+ *  -   Values, when set, are automatically copied to the Instance state.props
+ *
+ * @returns {Function}
+ */
+        function prop() {
+            for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) args[_key] = arguments[_key];
+            // Called with options? Return Design function
+            if (args.length < 2) return setupProp.bind(null, args[0]);
+            return setupProp.apply(void 0, [ null ].concat(args));
+        }
+        function setupProp(options, Proto, prop, descriptor) {
+            Object(__WEBPACK_IMPORTED_MODULE_1_common_micro_libs_src_jsutils_objectExtend__.a)(getPropDef(Proto, prop), options);
+            descriptor.get = descriptor.set = lazyProp(prop, descriptor.get, descriptor.set);
+            return descriptor;
+        }
+        function getClassProps(Proto) {
+            Proto.constructor.__props || Object.defineProperty(Proto.constructor, "__props", {
+                configurable: true,
+                value: {}
+            });
+            return Proto.constructor.__props;
+        }
+        function getPropDef(Proto, name) {
+            var classProps = getClassProps(Proto);
+            classProps[name] || (classProps[name] = {
+                name: name,
+                attr: false
+            });
+            return classProps[name];
+        }
+        /**
+ * Return a getter/setter function to be used in a Property descriptor. When invoked first time as
+ * part of an instance, it will setup the actually get/set function that will persist Props to the
+ * instance `state.props`
+ *
+ * @private
+ *
+ * @param propName
+ * @param getter
+ * @param setter
+ *
+ * @returns {Function}
+ */
+        function lazyProp(propName, getter, setter) {
+            return function() {
+                Object.defineProperty(this, propName, {
+                    configurable: true,
+                    get: function() {
+                        return Object(__WEBPACK_IMPORTED_MODULE_0__utils__.b)(this).props[propName];
+                    },
+                    set: function(newValue) {
+                        setter && (newValue = setter.call(this, newValue));
+                        return Object(__WEBPACK_IMPORTED_MODULE_0__utils__.b)(this).props[propName] = newValue;
+                    }
+                });
+                Object(__WEBPACK_IMPORTED_MODULE_0__utils__.b)(this).props[propName] = getter();
+                // update mode
+                if (1 === arguments.length) return this[propName];
+                return this[propName];
+            };
+        }
+    }, /* 7 */
+    /***/
+    function(module, __webpack_exports__, __webpack_require__) {
+        "use strict";
+        /* unused harmony export objectExtend */
+        var OBJECT_TYPE = "[object Object]";
+        var _toString = Function.call.bind(Object.prototype.toString);
+        //============================================================
+        /**
+ * Extends an object with the properties of another.
+ *
+ * @param {Object|Boolean} mergeIntoObj
+ *  The object that will have the properties of every other object provided
+ *  on input merged into. This can also be a `Boolean`, in which case,
+ *  a deep merge of objects will be done - argument number 2 will
+ *  become the `mergeIntoObj`.
+ * @param {...Object} mergeObjects
+ *
+ * @return {Object}
+ */
+        function objectExtend(mergeIntoObj) {
+            var response = mergeIntoObj || {};
+            for (var _len = arguments.length, mergeObjects = Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) mergeObjects[_key - 1] = arguments[_key];
+            var total = mergeObjects.length;
+            var deepMerge = false;
+            var i = void 0;
+            var key = void 0;
+            if ("boolean" === typeof mergeIntoObj) {
+                deepMerge = mergeIntoObj;
+                response = mergeObjects.shift() || {};
+                total = mergeObjects.length;
+            }
+            for (i = 0; i < total; i++) {
+                if (!mergeObjects[i]) continue;
+                for (key in mergeObjects[i]) mergeObjects[i].hasOwnProperty(key) && (deepMerge && _toString(response[key]) === OBJECT_TYPE && _toString(mergeObjects[i][key]) === OBJECT_TYPE ? response[key] = objectExtend(true, response[key], mergeObjects[i][key]) : response[key] = mergeObjects[i][key]);
+            }
+            return response;
+        }
+        /* harmony default export */
+        __webpack_exports__.a = objectExtend;
     } ]);
 });
 //# sourceMappingURL=component-element.js.map
