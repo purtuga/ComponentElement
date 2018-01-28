@@ -15,6 +15,26 @@ export default class MyWidget extends ComponentElement {
 }
 ```
 
+## Polyfill
+
+Include a [polyfill](https://github.com/WebReflection/document-register-element) prior to any web component being loaded.  Something like this will work:
+ 
+```html
+<head>
+    <script>
+        if (!('customElements' in window)) {
+            document.write('<' + 'script src="//cdnjs.cloudflare.com/ajax/libs/document-register-element/1.5.0/document-register-element.js"></' + 'script>');
+            console.log("CE pollyfill requested");
+        }
+    </script>
+</head>
+<body>
+
+    <!-- now load your web components/app -->
+</body>
+
+```
+
 ## License
 
 MIT

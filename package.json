@@ -29,5 +29,6 @@
     "homepage": "https://github.com/purtuga/ComponentElement#readme",
     "devDependencies": {
         "base": "github:purtuga/Base"
-    }
+    },
+    "dependencies": {}
 }
