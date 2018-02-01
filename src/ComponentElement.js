@@ -1,3 +1,6 @@
+// import { DomDataBind } from "dom-data-bind"
+import { ObservableObject } from "observable-data"
+import { watchPropOnce } from "observable-data/src/ObservableObject"
 import {
     getInstanceState,
     PRIVATE
@@ -16,8 +19,23 @@ export class ComponentElement extends HTMLElement {
         super(...args);
         const state = getInstanceState(this);
         state.content = this.constructor.useShadow && SHADOW_DOM_SUPPORTED ? this.attachShadow({ mode: "open" }) : this;
-        state.content.innerHTML = this.constructor.template;
+        if (state.ready) {
+            state.content.innerHTML = this.constructor.template;
+            // state.binder = new DomDataBind(state.content, state.props);
+            this.ready()
+        }
+        else {
+            state.readyWatcher = watchPropOnce(state, "ready", () => {
+                state.content.innerHTML = this.constructor.template;
+                // state.binder = new DomDataBind(state.content, state.props);
+                this.ready();
+                if (state.isMounted) {
+                    this.mounted();
+                }
+            });
+        }
         this.init();
+
         return this;
     }
 
@@ -77,6 +95,7 @@ export class ComponentElement extends HTMLElement {
     //  Instance Members
     //==============================================================
 
+    // Reflects changed html attributes to state.props
     attributeChangedCallback(name, oldValue, newValue) {
         Object.keys(this.constructor.__props).some(propName => {
             if (propName.toLowerCase() === name) {
@@ -84,8 +103,7 @@ export class ComponentElement extends HTMLElement {
                 return true;
             }
         });
-        // set the value to stat.props
-        getInstanceState(this).props[name] = newValue;
+        this.props[name] = newValue;
     }
 
     /**
@@ -111,12 +129,40 @@ export class ComponentElement extends HTMLElement {
         getInstanceState(this).destroyCallbacks.push(callback);
     }
 
+    /**
+     * The Component's props. Object is `live` (an `ObservableObject`).
+     * @type {Object}
+     */
+    get props() {
+        if (this.constructor.prototype === this) {
+            throw new Error("can't be used on own prototype");
+        }
+
+        // On first call - setup the property on the instance
+        const propDefintions = this.constructor.__props;
+        let props = {};
+
+        Object.keys(propDefintions).forEach(propName => {
+            props[propName] = null; // Ensure we DO NOT invoke getter of instance prop
+        });
+
+        props = new ObservableObject(props);
+
+        Object.defineProperty(this, "props", {
+            configurable: true,
+            get() { return props; }
+        });
+
+        return props;
+    }
+
     //~~~~~~~~~~~~~~~~~~~~~~ LIFE CYCLE HOOKS ~~~~~~~~~~~~~~~~~~~~~~
 
     /**
-     * Called only once, at the time the comonent is instantiated (called by the constructor).
-     * The `template` will already have been inserted into the element and its DOM representation will
-     * be included inside of `getState().content`.
+     * Called to initialize the component, but only after only after all required
+     * props have been provided.  This method could be called multiple times, if component
+     * has been destroyed, but then re-attached to the DOM Tree.
+     *
      */
     init() {}
 
@@ -126,8 +172,7 @@ export class ComponentElement extends HTMLElement {
     ready() {}
 
     /**
-     * Called only after the component is part of DOM and only if all props that were marked
-     * required have been provided.
+     * Called only after the component has been initialized (`init()` has been called).
      * This method could be called multiple times depending on whether the element is
      * added/removed from DOM.
      * This is a good place to setup global events and/or initiate retrieval of data.
@@ -136,8 +181,7 @@ export class ComponentElement extends HTMLElement {
 
 
     /**
-     * Called soon after (nextTick) the Element is removed from DOM, but probably before the `destroy`
-     * method has run.
+     * Called if component has been initialized (`init()` has run).
      */
     unmounted() {}
 
@@ -164,6 +208,10 @@ export class ComponentElement extends HTMLElement {
                 clearTimeout(state.destroyQueued);
                 state.destroyQueued = null;
             }
+            state.isMounted = true;
+            if (state.ready) {
+                this.mounted();
+            }
         }
     }
 
@@ -175,6 +223,10 @@ export class ComponentElement extends HTMLElement {
             const state = getInstanceState(this);
             if (!state.destroyQueued) {
                 state.destroyQueued = setTimeout(this.destroy.bind(this), this.constructor.delayDestroy);
+            }
+            state.isMounted = false;
+            if (state.ready) {
+                this.unmounted();
             }
         }
     }

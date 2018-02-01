@@ -1,6 +1,4 @@
-import { getInstanceState } from "./utils"
-import objectExtend from "common-micro-libs/src/jsutils/objectExtend"
-
+import { objectExtend, objectDefineProperty } from "common-micro-libs"
 
 /**
  * Create a ComponentElement property.
@@ -29,7 +27,7 @@ function setupProp(options, Proto, prop, descriptor) {
 
 function getClassProps(Proto) {
     if (!Proto.constructor.__props) {
-        Object.defineProperty(Proto.constructor, "__props", { configurable: true, value: {} })
+        objectDefineProperty(Proto.constructor, "__props", { configurable: true, value: {} })
     }
     return Proto.constructor.__props;
 }
@@ -40,7 +38,8 @@ function getPropDef(Proto, name) {
     if (!classProps[name]) {
         classProps[name] = {
             name,
-            attr: false
+            attr: false,
+            required: false
         };
     }
 
@@ -50,7 +49,7 @@ function getPropDef(Proto, name) {
 /**
  * Return a getter/setter function to be used in a Property descriptor. When invoked first time as
  * part of an instance, it will setup the actually get/set function that will persist Props to the
- * instance `state.props`
+ * instance `instance.props`
  *
  * @private
  *
@@ -62,24 +61,24 @@ function getPropDef(Proto, name) {
  */
 function lazyProp(propName, getter, setter) {
     return function lazyGetterSetter() {
-        Object.defineProperty(this, propName, {
+        objectDefineProperty(this, propName, {
             configurable: true,
             get() {
-                return getInstanceState(this).props[propName];
+                return this.props[propName];
             },
             set(newValue) {
                 if (setter) {
                     newValue = setter.call(this, newValue);
                 }
-                return getInstanceState(this).props[propName] = newValue;
+                return this.props[propName] = newValue;
             }
         });
 
-        getInstanceState(this).props[propName] = getter();
+        this.props[propName] = getter();
 
         // update mode
         if (arguments.length === 1) {
-            return this[propName];
+            return this[propName] = arguments[0];
         }
 
         return this[propName];
