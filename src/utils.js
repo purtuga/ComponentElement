@@ -4,7 +4,7 @@ import { ObservableObject } from "observable-data"
 //============================================================================
 export const PRIVATE = dataStore.create();
 
-export function getInstanceState(instance) {
+export function getState(instance) {
     if (!PRIVATE.has(instance)) {
         let state = {
             ready: false,           // We have all required params

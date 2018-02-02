@@ -14,7 +14,15 @@ export default class MyWidget extends ComponentElement {
     };
     
     @prop
-    get listName() {}
+    get listName() {
+        return "tasks"; // default value
+    }
+    set listName(newValue) {
+        if (!newValue) {
+            console.log(`"${ newValue }" is not a valid listName`);
+        }
+        return this.listName;
+    }
 }
 ```
 
@@ -40,7 +48,31 @@ Include a [polyfill](https://github.com/WebReflection/document-register-element)
 
 ## Props
 
-Props can be defined using the `prop` decorator. Props defined this way are automatically reflected in `state.props`. The decorator can also be used to set props as being able to be defined via HTML attributes. When defined as an attribute, that attribute must be defined as all lower case - example: a prop named `listName` set an attribute, will need to be defined as `listname`.
+Props can be defined using the `prop` decorator. Props defined this way are automatically reflected in on the component instance under the `props` property. When defining a `prop` on a CmponentElement class, the property getter will be used to obtain the initial value for the property (default value), while the property setter method (if any) can be used to validate the input received. 
+
+The following options exists for this decorator:
+
+```javascript
+prop({
+    required: true,
+    attr: true
+})
+```
+
+-   `attr` : `{Boolean}` can the prop be set via an html attribute. (reminder: html attribute values only accept `{String}` and `{Boolean}` values).
+    IMPORTANT: When defined as an attribute, that attribute must be defined as all lower case - example: a prop named `listName` set an attribute, will need to be defined as `listname`:
+    
+    ```html
+    <div listname="some value here"></div>
+    ```
+    
+-   `required` : `{Boolean}` If prop value is required. `ready` callback will not be executed until all required props have been set.
+
+
+## Lifecycle
+
+tbd...
+
 
 ## License
 

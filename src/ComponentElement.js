@@ -2,13 +2,12 @@
 import { ObservableObject } from "observable-data"
 import { watchPropOnce } from "observable-data/src/ObservableObject"
 import {
-    getInstanceState,
+    getState,
     PRIVATE
 } from "./utils"
 
 //============================================================================
 const SHADOW_DOM_SUPPORTED = document.head.createShadowRoot || document.head.attachShadow;
-
 
 /**
  * A generic class for building widgets based on HTML Custom Elements.
@@ -17,25 +16,7 @@ const SHADOW_DOM_SUPPORTED = document.head.createShadowRoot || document.head.att
 export class ComponentElement extends HTMLElement {
     constructor(...args) {
         super(...args);
-        const state = getInstanceState(this);
-        state.content = this.constructor.useShadow && SHADOW_DOM_SUPPORTED ? this.attachShadow({ mode: "open" }) : this;
-        if (state.ready) {
-            state.content.innerHTML = this.constructor.template;
-            // state.binder = new DomDataBind(state.content, state.props);
-            this.ready()
-        }
-        else {
-            state.readyWatcher = watchPropOnce(state, "ready", () => {
-                state.content.innerHTML = this.constructor.template;
-                // state.binder = new DomDataBind(state.content, state.props);
-                this.ready();
-                if (state.isMounted) {
-                    this.mounted();
-                }
-            });
-        }
-        this.init();
-
+        setupComponent(this);
         return this;
     }
 
@@ -111,7 +92,7 @@ export class ComponentElement extends HTMLElement {
      */
     destroy() {
         if (PRIVATE.has(this)) {
-            const state = getInstanceState(this);
+            const state = getState(this);
             PRIVATE.delete(this);
             if (state.destroyQueued) {
                 clearTimeout(state.destroyQueued);
@@ -126,7 +107,7 @@ export class ComponentElement extends HTMLElement {
      * @param {Function} callback
      */
     onDestroy(callback) {
-        getInstanceState(this).destroyCallbacks.push(callback);
+        getState(this).destroyCallbacks.push(callback);
     }
 
     /**
@@ -189,7 +170,8 @@ export class ComponentElement extends HTMLElement {
     //~~~~~~~~~~~~~~~~~~~~~~ EVENTEMITTER INTERFACE ~~~~~~~~~~~~~~~~~~~~~~
 
     /**
-     * Dispatches a native `CustomEvent`
+     * Dispatches a native `CustomEvent`. The `data` provided will be available
+     * in the customEvent.detail property
      *
      * @param {String} eventName
      * @param {*} data
@@ -203,7 +185,7 @@ export class ComponentElement extends HTMLElement {
     connectedCallback() {
         // Cancel destroy if it is queued
         if (PRIVATE.has(this)) {
-            const state = getInstanceState(this);
+            const state = getState(this);
             if (state.destroyQueued) {
                 clearTimeout(state.destroyQueued);
                 state.destroyQueued = null;
@@ -213,6 +195,9 @@ export class ComponentElement extends HTMLElement {
                 this.mounted();
             }
         }
+        else {
+            setupComponent(this);
+        }
     }
 
     disconnectedCallback() {
@@ -220,7 +205,7 @@ export class ComponentElement extends HTMLElement {
         // This seems to be currently the only way to ensure attached `onDestroy` logic run when
         // the element is no longer needed.
         if (PRIVATE.has(this)) {
-            const state = getInstanceState(this);
+            const state = getState(this);
             if (!state.destroyQueued) {
                 state.destroyQueued = setTimeout(this.destroy.bind(this), this.constructor.delayDestroy);
             }
@@ -232,4 +217,39 @@ export class ComponentElement extends HTMLElement {
     }
 }
 export default ComponentElement;
+
+function setupComponent(component) {
+    const state = getState(component);
+    // state.content = component.constructor.useShadow && SHADOW_DOM_SUPPORTED ? component.attachShadow({ mode: "open" }) : component;
+
+    if (component.constructor.useShadow && SHADOW_DOM_SUPPORTED) {
+        if (component.shadowRoot) {
+            state.content = component.shadowRoot;
+        }
+        else {
+            state.content = component.attachShadow({ mode: "open" });
+        }
+    }
+    else {
+        state.content = this;
+    }
+
+    component.init();
+
+    if (state.ready) {
+        state.content.innerHTML = component.constructor.template;
+        // state.binder = new DomDataBind(state.content, state.props);
+        component.ready()
+    }
+    else {
+        state.readyWatcher = watchPropOnce(state, "ready", () => {
+            state.content.innerHTML = component.constructor.template;
+            // state.binder = new DomDataBind(state.content, state.props);
+            component.ready();
+            if (state.isMounted) {
+                component.mounted();
+            }
+        });
+    }
+}
 
