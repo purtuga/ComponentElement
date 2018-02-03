@@ -34,7 +34,7 @@ Include a [polyfill](https://github.com/WebReflection/document-register-element)
 <head>
     <script>
         if (!('customElements' in window)) {
-            document.write('<' + 'script src="//cdnjs.cloudflare.com/ajax/libs/document-register-element/1.5.0/document-register-element.js"></' + 'script>');
+            document.write('<' + 'script src="//cdnjs.cloudflare.com/ajax/libs/document-register-element/1.7.1/document-register-element.js"></' + 'script>');
             console.log("CE pollyfill requested");
         }
     </script>

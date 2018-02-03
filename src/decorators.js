@@ -1,4 +1,5 @@
-import { objectExtend, objectDefineProperty } from "common-micro-libs"
+import objectExtend from "common-micro-libs/src/jsutils/objectExtend"
+import { objectDefineProperty } from "common-micro-libs/src/jsutils/runtime-aliases"
 
 /**
  * Create a ComponentElement property.
@@ -60,8 +61,16 @@ function getPropDef(Proto, name) {
  * @returns {Function}
  */
 function lazyProp(propName, getter, setter) {
+    const $propName = `_$${ propName }`;
+
     return function lazyGetterSetter() {
-        objectDefineProperty(this, propName, {
+        const isUpdateMode = arguments.length === 1;
+
+        if (Object.getOwnPropertyNames(this).indexOf($propName) !== -1) {
+            return isUpdateMode ? (this[$propName] = arguments[0]) : this[$propName];
+        }
+
+        objectDefineProperty(this, $propName, {
             configurable: true,
             get() {
                 return this.props[propName];
@@ -77,10 +86,10 @@ function lazyProp(propName, getter, setter) {
         this.props[propName] = getter();
 
         // update mode
-        if (arguments.length === 1) {
-            return this[propName] = arguments[0];
+        if (isUpdateMode) {
+            return this[$propName] = arguments[0];
         }
 
-        return this[propName];
+        return this[$propName];
     };
 }

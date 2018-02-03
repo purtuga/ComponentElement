@@ -1,6 +1,4 @@
-// import { DomDataBind } from "dom-data-bind"
-import { ObservableObject } from "observable-data"
-import { watchPropOnce } from "observable-data/src/ObservableObject"
+import ObservableObject, { watchPropOnce } from "observable-data/src/ObservableObject"
 import {
     getState,
     PRIVATE
@@ -119,6 +117,10 @@ export class ComponentElement extends HTMLElement {
             throw new Error("can't be used on own prototype");
         }
 
+        if (this._$props) {
+            return this._$props;
+        }
+
         // On first call - setup the property on the instance
         const propDefintions = this.constructor.__props;
         let props = {};
@@ -128,12 +130,7 @@ export class ComponentElement extends HTMLElement {
         });
 
         props = new ObservableObject(props);
-
-        Object.defineProperty(this, "props", {
-            configurable: true,
-            get() { return props; }
-        });
-
+        Object.defineProperty(this, "_$props", { value: props });
         return props;
     }
 
@@ -231,7 +228,7 @@ function setupComponent(component) {
         }
     }
     else {
-        state.content = this;
+        state.content = component;
     }
 
     component.init();
