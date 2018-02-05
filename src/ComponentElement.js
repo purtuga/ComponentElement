@@ -1,4 +1,4 @@
-import ObservableObject, { watchPropOnce } from "observable-data/src/ObservableObject"
+import ObservableObject, { watchPropOnce, watchProp } from "observable-data/src/ObservableObject"
 import {
     getState,
     PRIVATE
@@ -42,7 +42,7 @@ export class ComponentElement extends HTMLElement {
      *
      * @return {Number}
      */
-    static get delayDestroy() { return 30000; }
+    static get delayDestroy() { return 5000; }
 
     /**
      * If Shadow DOM should be used. Default `true`
@@ -150,6 +150,12 @@ export class ComponentElement extends HTMLElement {
     ready() {}
 
     /**
+     * Component is not ready, and if already stated, it might need adjusted. This means that not all
+     * required props are currently defined.
+     */
+    unready() {}
+
+    /**
      * Called only after the component has been initialized (`init()` has been called).
      * This method could be called multiple times depending on whether the element is
      * added/removed from DOM.
@@ -217,7 +223,24 @@ export default ComponentElement;
 
 function setupComponent(component) {
     const state = getState(component);
-    // state.content = component.constructor.useShadow && SHADOW_DOM_SUPPORTED ? component.attachShadow({ mode: "open" }) : component;
+    const handleReadyChanges = () => {
+        if (state.ready) {
+            if (!state.hasTemplate) {
+                state.content.innerHTML = component.constructor.template;
+                state.hasTemplate = true;
+            }
+
+            component.ready();
+
+            if (state.isMounted) {
+                component.mounted();
+            }
+        }
+        else if (state.hasTemplate) {
+            component.unready();
+        }
+
+    };
 
     if (component.constructor.useShadow && SHADOW_DOM_SUPPORTED) {
         if (component.shadowRoot) {
@@ -233,20 +256,9 @@ function setupComponent(component) {
 
     component.init();
 
-    if (state.ready) {
-        state.content.innerHTML = component.constructor.template;
-        // state.binder = new DomDataBind(state.content, state.props);
-        component.ready()
-    }
-    else {
-        state.readyWatcher = watchPropOnce(state, "ready", () => {
-            state.content.innerHTML = component.constructor.template;
-            // state.binder = new DomDataBind(state.content, state.props);
-            component.ready();
-            if (state.isMounted) {
-                component.mounted();
-            }
-        });
-    }
+    state.readyWatcher = watchProp(state, "ready", handleReadyChanges);
+    handleReadyChanges();
 }
+
+
 

@@ -8,12 +8,14 @@ export function getState(instance) {
     if (!PRIVATE.has(instance)) {
         let state = {
             ready: false,           // We have all required params
+            readyWatcher: null,
             props: instance.props,
             content: null,
             destroyCallbacks: [],
             destroyQueued: null,
             binder: null,
-            isMounted: false
+            isMounted: false,
+            hasTemplate: false // template has been inserted into component .content
         };
 
         // Create all props
