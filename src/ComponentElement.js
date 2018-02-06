@@ -1,4 +1,4 @@
-import ObservableObject, { watchPropOnce, watchProp } from "observable-data/src/ObservableObject"
+import ObservableObject, { watchProp } from "observable-data/src/ObservableObject"
 import {
     getState,
     PRIVATE
@@ -33,7 +33,7 @@ export class ComponentElement extends HTMLElement {
      * Registers the web component. Uses tagName as default input param
      */
     static define(name) {
-        customElements.define(name || this.tagName, this);
+        window.customElements.define(name || this.tagName, this);
     }
 
     /**
@@ -199,6 +199,7 @@ export class ComponentElement extends HTMLElement {
             }
         }
         else {
+            getState(this).isMounted = true;
             setupComponent(this);
         }
     }
@@ -223,7 +224,14 @@ export default ComponentElement;
 
 function setupComponent(component) {
     const state = getState(component);
+    let lastReadyState = null;
     const handleReadyChanges = () => {
+        if (lastReadyState === state.ready) {
+            return;
+        }
+
+        lastReadyState = state.ready;
+
         if (state.ready) {
             if (!state.hasTemplate) {
                 state.content.innerHTML = component.constructor.template;
@@ -257,8 +265,6 @@ function setupComponent(component) {
     component.init();
 
     state.readyWatcher = watchProp(state, "ready", handleReadyChanges);
+    component.onDestroy(state.readyWatcher.off);
     handleReadyChanges();
 }
-
-
-
