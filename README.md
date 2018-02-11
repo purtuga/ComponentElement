@@ -83,8 +83,10 @@ ____
 ## TODO
 
 - [ ] Support for Class.propDef (will replace current private object. Will allow for use without Decorators)
-- [ ] create two new instance methods: `$()` = select single element, and: `$$()` select multiples
-- [ ] expose instance `$ui` -- Pointer to either shadowRoot or element
+- [ ] Remove dependency on ObservableData. Probably underutilized for base class functionality.
+- [x] create two new instance methods: `$()` = select single element, and: `$$()` select multiples
+- [x] expose instance `$ui` -- Pointer to either shadowRoot or element
+- [x] Add static property `shadowMode` - default it to true
 
 
 

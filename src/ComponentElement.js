@@ -47,9 +47,16 @@ export class ComponentElement extends HTMLElement {
     /**
      * If Shadow DOM should be used. Default `true`
      *
-     * @return {Boolean}
+     * @type {Boolean}
      */
     static get useShadow() { return true; }
+
+    /**
+     * The value for the `mode` option that will be used on the `attachShadow` method.
+     *
+     * @type {string}
+     */
+    static get shadowMode() { return "open"; }
 
     /**
      * Returns the HTML template for the component
@@ -132,6 +139,43 @@ export class ComponentElement extends HTMLElement {
         props = new ObservableObject(props);
         Object.defineProperty(this, "_$props", { value: props });
         return props;
+    }
+
+    /**
+     * Pointer to the UI of the Component. Value is will either be the `showdowRoot` or the element
+     * itself.
+     *
+     * @returns {HTMLElement}
+     */
+    get $ui() {
+        return this._$ui;
+    }
+
+    /**
+     * Find an element in the `$ui` (alias for `querySelector()`)
+     *
+     * @param {String} selector
+     *
+     * @return {HTMLElement}
+     */
+    $(selector) {
+        return this.$ui.querySelector(selector);
+    }
+
+    /**
+     * Returns an array with matched set of DOM elements based on the given selector.
+     * (alias for `querySelectorAll()`)
+     *
+     * @param {String} selector
+     *
+     * @returns {Array<HTMLElement>}
+     */
+    $$(selector) {
+        const result = this.$ui.querySelectorAll(selector);
+        if (Array.isArray(result)) {
+            return;
+        }
+        return Array.prototype.slice.call(result, 0);
     }
 
     //~~~~~~~~~~~~~~~~~~~~~~ LIFE CYCLE HOOKS ~~~~~~~~~~~~~~~~~~~~~~
@@ -234,7 +278,7 @@ function setupComponent(component) {
 
         if (state.ready) {
             if (!state.hasTemplate) {
-                state.content.innerHTML = component.constructor.template;
+                component._$ui.innerHTML = component.constructor.template;
                 state.hasTemplate = true;
             }
 
@@ -252,14 +296,14 @@ function setupComponent(component) {
 
     if (component.constructor.useShadow && SHADOW_DOM_SUPPORTED) {
         if (component.shadowRoot) {
-            state.content = component.shadowRoot;
+            component._$ui = component.shadowRoot;
         }
         else {
-            state.content = component.attachShadow({ mode: "open" });
+            component._$ui = component.attachShadow({ mode: component.constructor.shadowMode });
         }
     }
     else {
-        state.content = component;
+        component._$ui = component;
     }
 
     component.init();

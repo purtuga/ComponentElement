@@ -10,12 +10,10 @@ export function getState(instance) {
             ready: false,           // We have all required params
             readyWatcher: null,
             props: instance.props,
-            content: null,
             destroyCallbacks: [],
             destroyQueued: null,
-            binder: null,
             isMounted: false,
-            hasTemplate: false // template has been inserted into component .content
+            hasTemplate: false // template has been inserted into component.$ui
         };
 
         // Create all props
