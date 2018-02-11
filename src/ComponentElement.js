@@ -122,7 +122,7 @@ export class ComponentElement extends HTMLElement {
         }
 
         // On first call - setup the property on the instance
-        const propDefintions = this.constructor.__props;
+        const propDefintions = this.constructor.__props || {};
         let props = {};
 
         Object.keys(propDefintions).forEach(propName => {

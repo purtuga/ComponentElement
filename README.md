@@ -77,3 +77,14 @@ tbd...
 ## License
 
 MIT
+
+____
+
+## TODO
+
+- [ ] Support for Class.propDef (will replace current private object. Will allow for use without Decorators)
+- [ ] create two new instance methods: `$()` = select single element, and: `$$()` select multiples
+- [ ] expose instance `$ui` -- Pointer to either shadowRoot or element
+
+
+

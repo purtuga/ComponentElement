@@ -19,7 +19,7 @@ export function getState(instance) {
         };
 
         // Create all props
-        const propDefintions    = instance.constructor.__props;
+        const propDefintions    = instance.constructor.__props || {};
         const required          = Object.keys(propDefintions).filter(propName => propDefintions[propName].required);
 
         ObservableObject.createComputed(state, "ready", function () {
