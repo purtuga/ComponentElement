@@ -83,10 +83,13 @@ ____
 ## TODO
 
 - [ ] Support for Class.propDef (will replace current private object. Will allow for use without Decorators)
-- [ ] Remove dependency on ObservableData. Probably underutilized for base class functionality.
+- [ ] Remove dependency on ObservableData. Probably under-utilized for base class functionality.
+- [ ] Support reflecting props to attribute (but only if they were defined by user as attr)
 - [x] create two new instance methods: `$()` = select single element, and: `$$()` select multiples
 - [x] expose instance `$ui` -- Pointer to either shadowRoot or element
 - [x] Add static property `shadowMode` - default it to true
+- [ ] ComponentElement.template should support also being a Template Element.
+- [ ] Integrate ShadyCSS if detected in Global and env. does not support Scoped CSS
 
 
 

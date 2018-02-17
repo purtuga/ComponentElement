@@ -1,3 +1,4 @@
+import objectExtend from "common-micro-libs/src/jsutils/objectExtend"
 import ObservableObject, { watchProp } from "observable-data/src/ObservableObject"
 import {
     getState,
@@ -6,6 +7,7 @@ import {
 
 //============================================================================
 const SHADOW_DOM_SUPPORTED = document.head.createShadowRoot || document.head.attachShadow;
+const EV_DEFAULT_INIT = { bubbles: false, cancelable: false, composed: false };
 
 /**
  * A generic class for building widgets based on HTML Custom Elements.
@@ -65,6 +67,15 @@ export class ComponentElement extends HTMLElement {
      */
     static get template() { return "<div></div>"; }
 
+    /**
+     * The default initialization options for the `emit()` method.
+     * See [Event.contructor]{@link http://devdocs.io/dom/event/event} for more.
+     *
+     * @type EventInit
+     */
+    static get eventInitOptions() {
+        return EV_DEFAULT_INIT;
+    }
 
     // Returns the list of props that were marked as `@attr`
     static get observedAttributes() {
@@ -222,9 +233,15 @@ export class ComponentElement extends HTMLElement {
      *
      * @param {String} eventName
      * @param {*} data
+     * @param {EventInit} [eventInit=ComponentElement.eventInitOptions]
+     *  Any other options for the CustomEvent initialization.
+     *  See [Event.contructor]{@link http://devdocs.io/dom/event/event} for more.
      */
-    emit(eventName, data) {
-        this.dispatchEvent(new CustomEvent(eventName, { detail: data }));
+    emit(eventName, data, eventInit) {
+        this.dispatchEvent(new CustomEvent(
+            eventName,
+            objectExtend({}, this.constructor.eventInitOptions, eventInit, { detail: data })
+        ));
     }
 
     //~~~~~~~~~~~~~~~~~~~~~~ BUITINS ~~~~~~~~~~~~~~~~~~~~~~
