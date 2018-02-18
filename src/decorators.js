@@ -1,5 +1,9 @@
 import objectExtend from "common-micro-libs/src/jsutils/objectExtend"
 import { objectDefineProperty } from "common-micro-libs/src/jsutils/runtime-aliases"
+import { getKebabCase, getPropsDefinition } from "./utils"
+
+//===============================================================================
+const RE_UPPER_CASE_LETTERS = /[A-Z]/;
 
 /**
  * Create a ComponentElement property.
@@ -20,17 +24,34 @@ export function prop(...args) {
 
 
 function setupProp(options, Proto, prop, descriptor) {
-    objectExtend(getPropDef(Proto, prop), options);
-    descriptor.get = descriptor.set = lazyProp(prop, descriptor.get, descriptor.set);
+    const propDef = objectExtend(getPropDef(Proto, prop), options);
+    const getter = descriptor.get;
+    const setter = descriptor.set;
+
+    descriptor.get = descriptor.set = lazyProp(prop, getter, setter);
+
+    // Create a instance property for each alias as well
+    if (propDef.aliases.length) {
+        propDef.aliases.forEach(propAliasName => {
+            if (!(propAliasName in Proto)) {
+                const aliasPropGetterSetterSetup = lazyProp(propAliasName, getter, setter);
+                objectDefineProperty(Proto, propAliasName, {
+                    configurable: true,
+                    get: aliasPropGetterSetterSetup,
+                    set: aliasPropGetterSetterSetup
+                });
+            }
+        })
+    }
     return descriptor;
 }
 
 
 function getClassProps(Proto) {
-    if (!Proto.constructor.__props) {
-        objectDefineProperty(Proto.constructor, "__props", { configurable: true, value: {} })
+    if (!Proto.constructor.propsDef) {
+        objectDefineProperty(Proto.constructor, "propsDef", { configurable: true, value: {} })
     }
-    return Proto.constructor.__props;
+    return Proto.constructor.propsDef;
 }
 
 function getPropDef(Proto, name) {
@@ -40,8 +61,15 @@ function getPropDef(Proto, name) {
         classProps[name] = {
             name,
             attr: false,
-            required: false
+            required: false,
+            aliases: [
+                name.toLowerCase()
+            ]
+            // _isAlias: --- used in getPropsDefinition()
         };
+        if (RE_UPPER_CASE_LETTERS.test(name)) {
+            classProps[name].aliases.push(getKebabCase(name));
+        }
     }
 
     return classProps[name];
@@ -70,20 +98,23 @@ function lazyProp(propName, getter, setter) {
             return isUpdateMode ? (this[$propName] = arguments[0]) : this[$propName];
         }
 
+        // Ensure we write back to
+        const writeToPropName = getPropsDefinition(this.constructor)[propName].name;
+
         objectDefineProperty(this, $propName, {
             configurable: true,
             get() {
-                return this.props[propName];
+                return this.props[writeToPropName];
             },
             set(newValue) {
                 if (setter) {
                     newValue = setter.call(this, newValue);
                 }
-                return this.props[propName] = newValue;
+                return this.props[writeToPropName] = newValue;
             }
         });
 
-        this.props[propName] = getter();
+        this.props[writeToPropName] = getter();
 
         // update mode
         if (isUpdateMode) {

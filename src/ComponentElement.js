@@ -1,13 +1,16 @@
 import objectExtend from "common-micro-libs/src/jsutils/objectExtend"
+import { objectKeys } from "common-micro-libs/src/jsutils/runtime-aliases"
 import ObservableObject, { watchProp } from "observable-data/src/ObservableObject"
 import {
     getState,
-    PRIVATE
+    PRIVATE,
+    getPropsDefinition
 } from "./utils"
 
 //============================================================================
 const SHADOW_DOM_SUPPORTED = document.head.createShadowRoot || document.head.attachShadow;
 const EV_DEFAULT_INIT = { bubbles: false, cancelable: false, composed: false };
+
 
 /**
  * A generic class for building widgets based on HTML Custom Elements.
@@ -25,9 +28,15 @@ export class ComponentElement extends HTMLElement {
     //==============================================================
 
     /**
+     * The Component's props definition
+     * @name propsDef
+     * @type {Object<String,Object>}
+     */
+
+    /**
      * Return default registration tag name
      *
-     * @return {String}
+     * @type {String}
      */
     static get tagName() { throw new Error("tagName not defined") }
 
@@ -42,7 +51,7 @@ export class ComponentElement extends HTMLElement {
      * The number of milliseconds to wait after an element has been detached from DOM before
      * the `.destroy()` method is auto executed.
      *
-     * @return {Number}
+     * @type {Number}
      */
     static get delayDestroy() { return 5000; }
 
@@ -63,7 +72,7 @@ export class ComponentElement extends HTMLElement {
     /**
      * Returns the HTML template for the component
      *
-     * @return {String}
+     * @type {String}
      */
     static get template() { return "<div></div>"; }
 
@@ -73,19 +82,25 @@ export class ComponentElement extends HTMLElement {
      *
      * @type EventInit
      */
-    static get eventInitOptions() {
-        return EV_DEFAULT_INIT;
-    }
+    static get eventInitOptions() { return EV_DEFAULT_INIT; }
 
-    // Returns the list of props that were marked as `@attr`
+    // Returns the list (Array) of props that were marked as `@attr`
     static get observedAttributes() {
-        return Object
-            .keys(this.__props || {})
-            .filter(p => this.__props[p].attr)
-            .map(p => p.toLowerCase());
+        let state = PRIVATE.get(this);
 
-        // ka-bob syntax: listName --> becomes list-name
-            // .map(p => p.replace(/([A-Z])/g, (match, p1) => "-" + p1.toLowerCase()));
+        if (!state) {
+            state = {};
+            PRIVATE.set(this, state);
+        }
+
+        if (state.observedAttrs) {
+            return state.observedAttrs;
+        }
+
+        const propList = getPropsDefinition(this);
+        state.observedAttrs = objectKeys(propList).filter(p => propList[p].attr);
+
+        return state.observedAttrs;
     }
 
     //==============================================================
@@ -94,12 +109,10 @@ export class ComponentElement extends HTMLElement {
 
     // Reflects changed html attributes to state.props
     attributeChangedCallback(name, oldValue, newValue) {
-        Object.keys(this.constructor.__props).some(propName => {
-            if (propName.toLowerCase() === name) {
-                name = propName;
-                return true;
-            }
-        });
+        const propsDef =  getPropsDefinition(this.constructor);
+        if (propsDef[name]) {
+            name = propsDef[name].name;
+        }
         this.props[name] = newValue;
     }
 
@@ -140,11 +153,13 @@ export class ComponentElement extends HTMLElement {
         }
 
         // On first call - setup the property on the instance
-        const propDefintions = this.constructor.__props || {};
+        const propDefintions = getPropsDefinition(this.constructor);
         let props = {};
 
         Object.keys(propDefintions).forEach(propName => {
-            props[propName] = null; // Ensure we DO NOT invoke getter of instance prop
+            if (!propDefintions[propName] || !propDefintions[propName]._isAlias) {
+                props[propName] = null; // Ensure we DO NOT invoke getter of instance prop
+            }
         });
 
         props = new ObservableObject(props);
@@ -235,7 +250,15 @@ export class ComponentElement extends HTMLElement {
      * @param {*} data
      * @param {EventInit} [eventInit=ComponentElement.eventInitOptions]
      *  Any other options for the CustomEvent initialization.
-     *  See [Event.contructor]{@link http://devdocs.io/dom/event/event} for more.
+     *  See [Event.constructor]{@link http://devdocs.io/dom/event/event} for more.
+     *
+     * @example
+     *
+     * document.body.addEventListener("my-event", function (ev) { console.log(ev.detail); });
+     *
+     * // My component
+     * myComponent.emit("my-event", { msg: "hello" });
+     *
      */
     emit(eventName, data, eventInit) {
         this.dispatchEvent(new CustomEvent(
@@ -329,3 +352,4 @@ function setupComponent(component) {
     component.onDestroy(state.readyWatcher.off);
     handleReadyChanges();
 }
+
