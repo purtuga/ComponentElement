@@ -30,7 +30,7 @@
     "homepage": "https://github.com/purtuga/ComponentElement#readme",
     "devDependencies": {
         "base": "github:purtuga/Base#master",
-        "common-micro-libs": "github:purtuga/common-micro-libs#release/v2x",
-        "observable-data": "github:purtuga/observable-data#release/v2x"
+        "common-micro-libs": "github:purtuga/common-micro-libs#master",
+        "observable-data": "github:purtuga/observable-data#master"
     }
 }
