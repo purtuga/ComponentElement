@@ -70,9 +70,9 @@ export class ComponentElement extends HTMLElement {
     static get shadowMode() { return "open"; }
 
     /**
-     * Returns the HTML template for the component
+     * Returns the HTML template for the component. Could also be a Template html element
      *
-     * @type {String}
+     * @type {String|HTMLElement}
      */
     static get template() { return "<div></div>"; }
 
@@ -153,11 +153,11 @@ export class ComponentElement extends HTMLElement {
         }
 
         // On first call - setup the property on the instance
-        const propDefintions = getPropsDefinition(this.constructor);
+        const propDefinitions = getPropsDefinition(this.constructor);
         let props = {};
 
-        Object.keys(propDefintions).forEach(propName => {
-            if (!propDefintions[propName] || !propDefintions[propName]._isAlias) {
+        Object.keys(propDefinitions).forEach(propName => {
+            if (!propDefinitions[propName] || !propDefinitions[propName]._isAlias) {
                 props[propName] = null; // Ensure we DO NOT invoke getter of instance prop
             }
         });
