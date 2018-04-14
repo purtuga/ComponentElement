@@ -20,13 +20,9 @@ export function getState(instance) {
 
         // Create all props
         const propDefintions    = getPropsDefinition(instance.constructor);
-        const required          = Object.keys(propDefintions).filter(propName => !propDefintions[propName]._isAlias && propDefintions[propName].required);
+        const required          = objectKeys(propDefintions).filter(propName => !propDefintions[propName]._isAlias && propDefintions[propName].required);
         const setReadyState     = () => {
-            // the `instance[propName]` forces the property to be created on the HTML element's instance (decorator setup)
-            if (
-                !required.length ||
-                required.every(propName => !!instance[propName] && !!state.props[propName])
-            ) {
+            if (!required.length || required.every(propName => !!state.props[propName])) {
                 state.ready = true;
             }
             else {
@@ -35,6 +31,7 @@ export function getState(instance) {
         };
 
         required.forEach(propName => objectWatchProp(state.props, propName, setReadyState));
+        setReadyState();
         PRIVATE.set(instance, state);
     }
     return PRIVATE.get(instance);
@@ -74,22 +71,13 @@ export function getCamelCase(str) {
 
 
 export function getPropsDefinition(Component) {
-    let state = PRIVATE.get(Component);
+    let state = getComponentClassState(Component);
 
-    if (!state || !state.propsDef) {
-        if (!state) {
-            state = {
-                propsDef: {}
-            };
-            PRIVATE.set(Component, state);
-        }
-
-        if (!state.propsDef) {
-            state.propsDef = {};
-        }
+    if (!state.propsDef) {
+        state.propsDef = {};
 
         // The props are stored internally (weakmap) once for the Component Class.
-        // The internal definition has the prop "aliases" expanded as well.
+        // The internal definition has the "aliases" expanded as well.
         if (Component.propsDef) {
             objectKeys(Component.propsDef).forEach(propName => {
                 state.propsDef[propName] = Component.propsDef[propName];
@@ -103,7 +91,43 @@ export function getPropsDefinition(Component) {
             });
         }
     }
+
     return state.propsDef;
 }
 
+/**
+ * Returns the internal state for the Component Class
+ *
+ * @param {ComponentElement} ComponentClass
+ *
+ * @return {Object}
+ */
+export function getComponentClassState(ComponentClass) {
+    if (!PRIVATE.has(ComponentClass)) {
+        PRIVATE.set(ComponentClass, {
+            propsDef: null,
+            template: null
+        });
+    }
+    return PRIVATE.get(ComponentClass);
+}
+
+/**
+ * Returns a clone of the Class's template - ready to be used/inserted
+ * into a instance of the class
+ *
+ * @param {ComponentElement} componentInstance
+ *
+ * @return {HTMLTemplateElement}
+ */
+export function getComponentTemplate(componentInstance) {
+    const classState = getComponentClassState(componentInstance.constructor);
+
+    if (!classState.template) {
+        classState.template = componentInstance.ownerDocument.createElement("template");
+        classState.template.innerHTML = componentInstance.constructor.template;
+    }
+
+    return componentInstance.ownerDocument.importNode(classState.template.content, true);
+}
 

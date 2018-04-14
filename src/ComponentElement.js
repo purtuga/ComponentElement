@@ -5,7 +5,8 @@ import domAddEventListener from "common-micro-libs/src/domutils/domAddEventListe
 import {
     getState,
     PRIVATE,
-    getPropsDefinition
+    getPropsDefinition,
+    getComponentTemplate
 } from "./utils"
 
 //============================================================================
@@ -334,7 +335,8 @@ function setupComponent(component) {
 
         if (state.ready) {
             if (!state.hasTemplate) {
-                component._$ui.innerHTML = component.constructor.template;
+                // component._$ui.innerHTML = component.constructor.template;
+                component._$ui.appendChild(getComponentTemplate(component));
                 state.hasTemplate = true;
             }
 
@@ -368,4 +370,3 @@ function setupComponent(component) {
     component.onDestroy(state.readyWatcher);
     handleReadyChanges();
 }
-
