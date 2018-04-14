@@ -111,7 +111,8 @@ ____
 - [x] Add static property `shadowMode` - default it to true
 - [ ] ComponentElement.template should support also being a Template Element.
 - [ ] Integrate ShadyCSS if detected in Global and env. does not support Scoped CSS
-- [ ] Remove dependency on ObservableData. Probably under-utilized for base class functionality.
+- [x] Remove dependency on ObservableData. Probably under-utilized for base class functionality.
+- [ ] Add onPropChange(callback) method
 
 
 

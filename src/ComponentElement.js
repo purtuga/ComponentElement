@@ -1,6 +1,7 @@
 import objectExtend from "common-micro-libs/src/jsutils/objectExtend"
-import { objectKeys } from "common-micro-libs/src/jsutils/runtime-aliases"
-import ObservableObject, { watchProp } from "observable-data/src/ObservableObject"
+import { objectKeys, objectDefineProperty } from "common-micro-libs/src/jsutils/runtime-aliases"
+import objectWatchProp from "common-micro-libs/src/jsutils/objectWatchProp"
+import domAddEventListener from "common-micro-libs/src/domutils/domAddEventListener"
 import {
     getState,
     PRIVATE,
@@ -156,14 +157,13 @@ export class ComponentElement extends HTMLElement {
         const propDefinitions = getPropsDefinition(this.constructor);
         let props = {};
 
-        Object.keys(propDefinitions).forEach(propName => {
+        objectKeys(propDefinitions).forEach(propName => {
             if (!propDefinitions[propName] || !propDefinitions[propName]._isAlias) {
-                props[propName] = null; // Ensure we DO NOT invoke getter of instance prop
+                props[propName] = propDefinitions[propName].default();
             }
         });
 
-        props = new ObservableObject(props);
-        Object.defineProperty(this, "_$props", { value: props });
+        objectDefineProperty(this, "_$props", { value: props });
         return props;
     }
 
@@ -267,6 +267,22 @@ export class ComponentElement extends HTMLElement {
         ));
     }
 
+    /**
+     * Set an event listener on the current component
+     *
+     * @param {String} eventNames
+     *  One or more event names to listen for (space delimetered)
+     *
+     * @param {Function} callback
+     *
+     * @param {Boolean} [capture=false]
+     *
+     * @returns {DOMEventListener}
+     */
+    on(eventNames, callback, capture) {
+        return domAddEventListener(this.$ui, eventNames, callback, capture);
+    }
+
     //~~~~~~~~~~~~~~~~~~~~~~ BUITINS ~~~~~~~~~~~~~~~~~~~~~~
 
     connectedCallback() {
@@ -348,8 +364,8 @@ function setupComponent(component) {
 
     component.init();
 
-    state.readyWatcher = watchProp(state, "ready", handleReadyChanges);
-    component.onDestroy(state.readyWatcher.off);
+    state.readyWatcher = objectWatchProp(state, "ready", handleReadyChanges);
+    component.onDestroy(state.readyWatcher);
     handleReadyChanges();
 }
 

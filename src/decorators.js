@@ -4,6 +4,7 @@ import { getKebabCase, getPropsDefinition } from "./utils"
 
 //===============================================================================
 const RE_UPPER_CASE_LETTERS = /[A-Z]/;
+const NOOP = val => val;
 
 /**
  * Create a ComponentElement property.
@@ -22,11 +23,10 @@ export function prop(...args) {
 }
 
 
-
 function setupProp(options, Proto, prop, descriptor) {
-    const propDef = objectExtend(getPropDef(Proto, prop), options);
     const getter = descriptor.get;
     const setter = descriptor.set;
+    const propDef = objectExtend(getPropDef(Proto, prop, getter), options);
 
     descriptor.get = descriptor.set = lazyProp(prop, getter, setter);
 
@@ -49,12 +49,12 @@ function setupProp(options, Proto, prop, descriptor) {
 
 function getClassProps(Proto) {
     if (!Proto.constructor.propsDef) {
-        objectDefineProperty(Proto.constructor, "propsDef", { configurable: true, value: {} })
+        objectDefineProperty(Proto.constructor, "propsDef", { configurable: true, writable: true, value: {} })
     }
     return Proto.constructor.propsDef;
 }
 
-function getPropDef(Proto, name) {
+function getPropDef(Proto, name, getter) {
     const classProps = getClassProps(Proto);
 
     if (!classProps[name]) {
@@ -62,6 +62,7 @@ function getPropDef(Proto, name) {
             name,
             attr: false,
             required: false,
+            default: getter || NOOP,
             aliases: [
                 name.toLowerCase()
             ]
@@ -113,8 +114,6 @@ function lazyProp(propName, getter, setter) {
                 return this.props[writeToPropName] = newValue;
             }
         });
-
-        this.props[writeToPropName] = getter();
 
         // update mode
         if (isUpdateMode) {

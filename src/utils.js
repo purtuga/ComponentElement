@@ -1,6 +1,6 @@
 import objectExtend from "common-micro-libs/src/jsutils/objectExtend"
 import dataStore from "common-micro-libs/src/jsutils/dataStore"
-import ObservableObject from "observable-data/src/ObservableObject"
+import objectWatchProp from "common-micro-libs/src/jsutils/objectWatchProp"
 import { isArray, objectKeys } from "common-micro-libs/src/jsutils/runtime-aliases"
 
 //============================================================================
@@ -21,16 +21,26 @@ export function getState(instance) {
         // Create all props
         const propDefintions    = getPropsDefinition(instance.constructor);
         const required          = Object.keys(propDefintions).filter(propName => !propDefintions[propName]._isAlias && propDefintions[propName].required);
+        const setReadyState     = () => {
+            // the `instance[propName]` forces the property to be created on the HTML element's instance (decorator setup)
+            if (
+                !required.length ||
+                required.every(propName => !!instance[propName] && !!state.props[propName])
+            ) {
+                state.ready = true;
+            }
+            else {
+                state.ready = false;
+            }
+        };
 
-        ObservableObject.createComputed(state, "ready", function () {
-            // the `instance[propName]` forces the property to be created on the HTML element's instance
-            return !required.length || required.every(propName => !!instance[propName] && !!state.props[propName]);
-        });
-
+        required.forEach(propName => objectWatchProp(state.props, propName, setReadyState));
         PRIVATE.set(instance, state);
     }
     return PRIVATE.get(instance);
 }
+
+
 
 /**
  * Returns a kebab-case representation of the given string on input. Essentially, replaces
@@ -84,9 +94,11 @@ export function getPropsDefinition(Component) {
             objectKeys(Component.propsDef).forEach(propName => {
                 state.propsDef[propName] = Component.propsDef[propName];
                 // expand aliases as well
-                if (isArray(state.propsDef[propName] .aliases)) {
+                if (isArray(state.propsDef[propName].aliases)) {
                     const propAliasDef = objectExtend({}, Component.propsDef[propName], { _isAlias: true });
-                    state.propsDef[propName] .aliases.forEach(propNameAlias => state.propsDef[propNameAlias] = propAliasDef);
+                    state.propsDef[propName].aliases.forEach(
+                        propNameAlias => !state.propsDef[propNameAlias] &&
+                                        (state.propsDef[propNameAlias] = propAliasDef));
                 }
             });
         }
