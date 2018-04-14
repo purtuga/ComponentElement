@@ -38,7 +38,6 @@ export function getState(instance) {
 }
 
 
-
 /**
  * Returns a kebab-case representation of the given string on input. Essentially, replaces
  * each Capital letter with a `-` followed by that letter in lower case.
@@ -106,7 +105,8 @@ export function getComponentClassState(ComponentClass) {
     if (!PRIVATE.has(ComponentClass)) {
         PRIVATE.set(ComponentClass, {
             propsDef: null,
-            template: null
+            template: null,
+            observedAttrs: null
         });
     }
     return PRIVATE.get(ComponentClass);

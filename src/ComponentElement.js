@@ -6,7 +6,8 @@ import {
     getState,
     PRIVATE,
     getPropsDefinition,
-    getComponentTemplate
+    getComponentTemplate,
+    getComponentClassState
 } from "./utils"
 
 //============================================================================
@@ -17,6 +18,7 @@ const EV_DEFAULT_INIT = { bubbles: false, cancelable: false, composed: false };
 /**
  * A generic class for building widgets based on HTML Custom Elements.
  *
+ * @extends HTMLElement
  */
 export class ComponentElement extends HTMLElement {
     constructor(...args) {
@@ -88,19 +90,12 @@ export class ComponentElement extends HTMLElement {
 
     // Returns the list (Array) of props that were marked as `@attr`
     static get observedAttributes() {
-        let state = PRIVATE.get(this);
+        let state = getComponentClassState(this);
 
-        if (!state) {
-            state = {};
-            PRIVATE.set(this, state);
+        if (!state.observedAttrs) {
+            const propList = getPropsDefinition(this);
+            state.observedAttrs = objectKeys(propList).filter(p => propList[p].attr);
         }
-
-        if (state.observedAttrs) {
-            return state.observedAttrs;
-        }
-
-        const propList = getPropsDefinition(this);
-        state.observedAttrs = objectKeys(propList).filter(p => propList[p].attr);
 
         return state.observedAttrs;
     }
@@ -142,7 +137,7 @@ export class ComponentElement extends HTMLElement {
     }
 
     /**
-     * The Component's props. Object is `live` (an `ObservableObject`).
+     * The Component's props.
      * @type {Object}
      */
     get props() {
