@@ -69,20 +69,20 @@ export function getCamelCase(str) {
 }
 
 
-export function getPropsDefinition(Component) {
-    let state = getComponentClassState(Component);
+export function getPropsDefinition(ComponentClass) {
+    let state = getComponentClassState(ComponentClass);
 
     if (!state.propsDef) {
         state.propsDef = {};
 
         // The props are stored internally (weakmap) once for the Component Class.
         // The internal definition has the "aliases" expanded as well.
-        if (Component.propsDef) {
-            objectKeys(Component.propsDef).forEach(propName => {
-                state.propsDef[propName] = Component.propsDef[propName];
+        if (ComponentClass.propsDef) {
+            objectKeys(ComponentClass.propsDef).forEach(propName => {
+                state.propsDef[propName] = ComponentClass.propsDef[propName];
                 // expand aliases as well
                 if (isArray(state.propsDef[propName].aliases)) {
-                    const propAliasDef = objectExtend({}, Component.propsDef[propName], { _isAlias: true });
+                    const propAliasDef = objectExtend({}, ComponentClass.propsDef[propName], { _isAlias: true });
                     state.propsDef[propName].aliases.forEach(
                         propNameAlias => !state.propsDef[propNameAlias] &&
                                         (state.propsDef[propNameAlias] = propAliasDef));

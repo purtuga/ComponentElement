@@ -155,7 +155,21 @@ export class ComponentElement extends HTMLElement {
 
         objectKeys(propDefinitions).forEach(propName => {
             if (!propDefinitions[propName] || !propDefinitions[propName]._isAlias) {
-                props[propName] = propDefinitions[propName].default();
+                let propValue = propDefinitions[propName].default();
+
+                objectDefineProperty(props, propName, {
+                    configurable: true,
+                    enumerable: true,
+                    get() {
+                        return propValue;
+                    },
+                    set: newValue => {
+                        newValue = propDefinitions[propName].filter.call(this, newValue);
+                        return propValue = newValue;
+                    }
+                });
+
+                // props[propName] = propDefinitions[propName].default();
             }
         });
 
@@ -277,6 +291,17 @@ export class ComponentElement extends HTMLElement {
      */
     on(eventNames, callback, capture) {
         return domAddEventListener(this.$ui, eventNames, callback, capture);
+    }
+
+    /**
+     * Add callback to be called when props change
+     *
+     * @param {Function} callback
+     *
+     * @return {ObjectUnwatchProp}
+     */
+    onPropsChange(callback) {
+        return objectWatchProp(this.props, null, callback);
     }
 
     //~~~~~~~~~~~~~~~~~~~~~~ BUITINS ~~~~~~~~~~~~~~~~~~~~~~

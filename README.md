@@ -56,7 +56,7 @@ tbd...
 
 ### B. Via `@prop` Decorator
 
-Props can be defined using the `prop` decorator. Props defined this way are automatically reflected in on the component instance under the `props` property. When defining a `prop` on a ComponentElement class, the property getter will be used to obtain the initial value for the property (default value), while the property setter method (if any) can be used to validate the input received. 
+Props can be defined using the `prop` decorator. Props defined this way are automatically reflected in on the component instance under the `props` property. When defining a `prop` on a ComponentElement class, the property getter will be used to obtain the initial value for the property (default value), while the property setter method (if any) will be used as a filter for when the value is being changed - ex. can be used to validate the input received and in turn return a different value to be stored. 
 
 The following options exists for this decorator:
 
@@ -112,7 +112,7 @@ ____
 - [x] ComponentElement.template should support also being a Template Element.
 - [ ] Integrate ShadyCSS if detected in Global and env. does not support Scoped CSS
 - [x] Remove dependency on ObservableData. Probably under-utilized for base class functionality.
-- [ ] Add onPropChange(callback) method
+- [x] Add onPropChange(callback) method
 
 
 

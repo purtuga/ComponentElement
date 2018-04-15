@@ -26,7 +26,7 @@ export function prop(...args) {
 function setupProp(options, Proto, prop, descriptor) {
     const getter = descriptor.get;
     const setter = descriptor.set;
-    const propDef = objectExtend(getPropDef(Proto, prop, getter), options);
+    const propDef = objectExtend(getPropDef(Proto, prop, getter, setter), options);
 
     descriptor.get = descriptor.set = lazyProp(prop, getter, setter);
 
@@ -54,7 +54,7 @@ function getClassProps(Proto) {
     return Proto.constructor.propsDef;
 }
 
-function getPropDef(Proto, name, getter) {
+function getPropDef(Proto, name, getter, setter) {
     const classProps = getClassProps(Proto);
 
     if (!classProps[name]) {
@@ -63,6 +63,7 @@ function getPropDef(Proto, name, getter) {
             attr: false,
             required: false,
             default: getter || NOOP,
+            filter: setter || NOOP,
             aliases: [
                 name.toLowerCase()
             ]
@@ -108,9 +109,6 @@ function lazyProp(propName, getter, setter) {
                 return this.props[writeToPropName];
             },
             set(newValue) {
-                if (setter) {
-                    newValue = setter.call(this, newValue);
-                }
                 return this.props[writeToPropName] = newValue;
             }
         });
