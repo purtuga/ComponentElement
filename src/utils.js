@@ -118,7 +118,7 @@ export function getComponentClassState(ComponentClass) {
  *
  * @param {ComponentElement} componentInstance
  *
- * @return {HTMLTemplateElement}
+ * @return {HTMLElement}
  */
 export function getComponentTemplate(componentInstance) {
     const classState = getComponentClassState(componentInstance.constructor);

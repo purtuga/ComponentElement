@@ -1,6 +1,6 @@
 import objectExtend from "common-micro-libs/src/jsutils/objectExtend"
 import { objectKeys, objectDefineProperty } from "common-micro-libs/src/jsutils/runtime-aliases"
-import objectWatchProp from "common-micro-libs/src/jsutils/objectWatchProp"
+import {objectWatchProp} from "observables/src/objectWatchProp"
 import domAddEventListener from "common-micro-libs/src/domutils/domAddEventListener"
 import {
     getState,
@@ -297,11 +297,13 @@ export class ComponentElement extends HTMLElement {
      * Add callback to be called when props change
      *
      * @param {Function} callback
+     * @param {String} [propName]
+     *  Optional. The specific prop to watch.
      *
      * @return {ObjectUnwatchProp}
      */
-    onPropsChange(callback) {
-        return objectWatchProp(this.props, null, callback);
+    onPropsChange(callback, propName) {
+        return objectWatchProp(this.props, propName, callback);
     }
 
     //~~~~~~~~~~~~~~~~~~~~~~ BUITINS ~~~~~~~~~~~~~~~~~~~~~~

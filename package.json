@@ -1,35 +1,36 @@
 {
-    "name": "component-element",
-    "version": "1.0.0",
-    "description": "A Custom Element based component to build widgets for the web (not frameworks)",
-    "main": "src/index.js",
-    "scripts": {
-        "serve": "webpack-dev-server --config node_modules/Base/configs/webpack.dev.js --progress --hot --color --entry ./dev/index.js",
-        "build": "webpack --config node_modules/Base/configs/webpack.dev.js",
-        "build:ie": "webpack --config node_modules/Base/configs/webpack.prod.js --entry ./dev/index.js --output-path ./dev",
-        "build:prod": "webpack --config node_modules/Base/configs/webpack.prod.js",
-        "build:prod:min": "webpack --config node_modules/Base/configs/webpack.prod.uglify.js",
-        "dist": "npm run build:prod&&npm run build:prod:min",
-        "setup:dev": "node node_modules/Base/scripts/create-dev"
-    },
-    "repository": {
-        "type": "git",
-        "url": "git+https://github.com/purtuga/ComponentElement.git"
-    },
-    "keywords": [
-        "CustomElement",
-        "component",
-        "element",
-        "webcomponents"
-    ],
-    "author": "Paul Tavares",
-    "license": "MIT",
-    "bugs": {
-        "url": "https://github.com/purtuga/ComponentElement/issues"
-    },
-    "homepage": "https://github.com/purtuga/ComponentElement#readme",
-    "devDependencies": {
-        "base": "github:purtuga/Base#master",
-        "common-micro-libs": "github:purtuga/common-micro-libs#master"
-    }
+  "name": "component-element",
+  "version": "1.0.0",
+  "description": "A Custom Element based component to build widgets for the web (not frameworks)",
+  "main": "src/index.js",
+  "scripts": {
+    "serve": "webpack-dev-server --config node_modules/Base/configs/webpack.dev.js --progress --hot --color --entry ./dev/index.js",
+    "build": "webpack --config node_modules/Base/configs/webpack.dev.js",
+    "build:ie": "webpack --config node_modules/Base/configs/webpack.prod.js --entry ./dev/index.js --output-path ./dev --output-filename component-element-ie.js",
+    "build:prod": "webpack --config node_modules/Base/configs/webpack.prod.js",
+    "build:prod:min": "webpack --config node_modules/Base/configs/webpack.prod.uglify.js",
+    "dist": "npm run build:prod&&npm run build:prod:min",
+    "setup:dev": "node node_modules/Base/scripts/create-dev"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/purtuga/ComponentElement.git"
+  },
+  "keywords": [
+    "CustomElement",
+    "component",
+    "element",
+    "webcomponents"
+  ],
+  "author": "Paul Tavares",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/purtuga/ComponentElement/issues"
+  },
+  "homepage": "https://github.com/purtuga/ComponentElement#readme",
+  "devDependencies": {
+    "base": "github:purtuga/Base#master",
+    "common-micro-libs": "github:purtuga/common-micro-libs#master",
+    "observables": "github:purtuga/observables"
+  }
 }
