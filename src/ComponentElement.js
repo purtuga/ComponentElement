@@ -76,7 +76,7 @@ export class ComponentElement extends HTMLElement {
     /**
      * Returns the HTML template for the component. Could also be a Template html element
      *
-     * @type {String|HTMLElement}
+     * @type {String|HTMLTemplateElement}
      */
     static get template() { return "<div></div>"; }
 

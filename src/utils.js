@@ -121,13 +121,17 @@ export function getComponentClassState(ComponentClass) {
  * @return {HTMLElement}
  */
 export function getComponentTemplate(componentInstance) {
-    const classState = getComponentClassState(componentInstance.constructor);
+    if ("string" === typeof componentInstance.constructor.template) {
+        const classState = getComponentClassState(componentInstance.constructor);
 
-    if (!classState.template) {
-        classState.template = componentInstance.ownerDocument.createElement("template");
-        classState.template.innerHTML = componentInstance.constructor.template;
+        if (!classState.template) {
+            classState.template = componentInstance.ownerDocument.createElement("template");
+            classState.template.innerHTML = componentInstance.constructor.template;
+        }
+
+        return componentInstance.ownerDocument.importNode(classState.template.content, true);
     }
 
-    return componentInstance.ownerDocument.importNode(classState.template.content, true);
+    return componentInstance.ownerDocument.importNode(componentInstance.constructor.template.content, true);
 }
 
