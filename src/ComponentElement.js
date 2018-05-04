@@ -22,9 +22,9 @@ const EV_DEFAULT_INIT = { bubbles: false, cancelable: false, composed: false };
  */
 export class ComponentElement extends HTMLElement {
     constructor(...args) {
-        super(...args);
-        setupComponent(this);
-        return this;
+        const self = super(...args) || this;
+        setupComponent(self);
+        return self;
     }
 
     //==============================================================

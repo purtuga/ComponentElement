@@ -226,7 +226,7 @@
         /* harmony import */
         var __WEBPACK_IMPORTED_MODULE_1_common_micro_libs_src_jsutils_dataStore__ = __webpack_require__(12);
         /* harmony import */
-        var __WEBPACK_IMPORTED_MODULE_2_common_micro_libs_src_jsutils_objectWatchProp__ = __webpack_require__(4);
+        var __WEBPACK_IMPORTED_MODULE_2_observables_src_objectWatchProp__ = __webpack_require__(4);
         /* harmony import */
         var __WEBPACK_IMPORTED_MODULE_3_common_micro_libs_src_jsutils_runtime_aliases__ = __webpack_require__(0);
         //============================================================================
@@ -254,7 +254,7 @@
                     }) ? state.ready = true : state.ready = false;
                 };
                 required.forEach(function(propName) {
-                    return Object(__WEBPACK_IMPORTED_MODULE_2_common_micro_libs_src_jsutils_objectWatchProp__.a)(state.props, propName, setReadyState);
+                    return Object(__WEBPACK_IMPORTED_MODULE_2_observables_src_objectWatchProp__.a)(state.props, propName, setReadyState);
                 });
                 setReadyState();
                 PRIVATE.set(instance, state);
@@ -279,17 +279,17 @@
                 return "-" + p1.toLowerCase();
             });
         }
-        function getPropsDefinition(Component) {
-            var state = getComponentClassState(Component);
+        function getPropsDefinition(ComponentClass) {
+            var state = getComponentClassState(ComponentClass);
             if (!state.propsDef) {
                 state.propsDef = {};
                 // The props are stored internally (weakmap) once for the Component Class.
                 // The internal definition has the "aliases" expanded as well.
-                Component.propsDef && Object(__WEBPACK_IMPORTED_MODULE_3_common_micro_libs_src_jsutils_runtime_aliases__.f)(Component.propsDef).forEach(function(propName) {
-                    state.propsDef[propName] = Component.propsDef[propName];
+                ComponentClass.propsDef && Object(__WEBPACK_IMPORTED_MODULE_3_common_micro_libs_src_jsutils_runtime_aliases__.f)(ComponentClass.propsDef).forEach(function(propName) {
+                    state.propsDef[propName] = ComponentClass.propsDef[propName];
                     // expand aliases as well
                     if (Object(__WEBPACK_IMPORTED_MODULE_3_common_micro_libs_src_jsutils_runtime_aliases__.c)(state.propsDef[propName].aliases)) {
-                        var propAliasDef = Object(__WEBPACK_IMPORTED_MODULE_0_common_micro_libs_src_jsutils_objectExtend__.a)({}, Component.propsDef[propName], {
+                        var propAliasDef = Object(__WEBPACK_IMPORTED_MODULE_0_common_micro_libs_src_jsutils_objectExtend__.a)({}, ComponentClass.propsDef[propName], {
                             _isAlias: true
                         });
                         state.propsDef[propName].aliases.forEach(function(propNameAlias) {
@@ -321,15 +321,18 @@
  *
  * @param {ComponentElement} componentInstance
  *
- * @return {HTMLTemplateElement}
+ * @return {HTMLElement}
  */
         function getComponentTemplate(componentInstance) {
-            var classState = getComponentClassState(componentInstance.constructor);
-            if (!classState.template) {
-                classState.template = componentInstance.ownerDocument.createElement("template");
-                classState.template.innerHTML = componentInstance.constructor.template;
+            if ("string" === typeof componentInstance.constructor.template) {
+                var classState = getComponentClassState(componentInstance.constructor);
+                if (!classState.template) {
+                    classState.template = componentInstance.ownerDocument.createElement("template");
+                    classState.template.innerHTML = componentInstance.constructor.template;
+                }
+                return componentInstance.ownerDocument.importNode(classState.template.content, true);
             }
-            return componentInstance.ownerDocument.importNode(classState.template.content, true);
+            return componentInstance.ownerDocument.importNode(componentInstance.constructor.template.content, true);
         }
     }, /* 3 */
     /***/
@@ -344,7 +347,7 @@
         /* harmony import */
         var __WEBPACK_IMPORTED_MODULE_1_common_micro_libs_src_jsutils_runtime_aliases__ = __webpack_require__(0);
         /* harmony import */
-        var __WEBPACK_IMPORTED_MODULE_2_common_micro_libs_src_jsutils_objectWatchProp__ = __webpack_require__(4);
+        var __WEBPACK_IMPORTED_MODULE_2_observables_src_objectWatchProp__ = __webpack_require__(4);
         /* harmony import */
         var __WEBPACK_IMPORTED_MODULE_3_common_micro_libs_src_domutils_domAddEventListener__ = __webpack_require__(11);
         /* harmony import */
@@ -424,12 +427,13 @@
             _inherits(ComponentElement, _HTMLElement);
             function ComponentElement() {
                 var _ref;
-                var _ret;
+                var _this, _ret;
                 _classCallCheck(this, ComponentElement);
                 for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) args[_key] = arguments[_key];
-                var _this = _possibleConstructorReturn(this, (_ref = ComponentElement.__proto__ || Object.getPrototypeOf(ComponentElement)).call.apply(_ref, [ this ].concat(args)));
-                setupComponent(_this);
-                return _ret = _this, _possibleConstructorReturn(_this, _ret);
+                var self = (_this = _possibleConstructorReturn(this, (_ref = ComponentElement.__proto__ || Object.getPrototypeOf(ComponentElement)).call.apply(_ref, [ this ].concat(args))), 
+                _this) || _this;
+                setupComponent(self);
+                return _ret = self, _possibleConstructorReturn(_this, _ret);
             }
             //==============================================================
             //  Static Members
@@ -522,6 +526,11 @@
                     return Object(__WEBPACK_IMPORTED_MODULE_3_common_micro_libs_src_domutils_domAddEventListener__.a)(this.$ui, eventNames, callback, capture);
                 }
             }, {
+                key: "onPropsChange",
+                value: function(callback, propName) {
+                    return Object(__WEBPACK_IMPORTED_MODULE_2_observables_src_objectWatchProp__.b)(this.props, propName, callback);
+                }
+            }, {
                 key: "connectedCallback",
                 value: function() {
                     // Cancel destroy if it is queued
@@ -554,13 +563,27 @@
             }, {
                 key: "props",
                 get: function() {
+                    var _this2 = this;
                     if (this.constructor.prototype === this) throw new Error("can't be used on own prototype");
                     if (this._$props) return this._$props;
                     // On first call - setup the property on the instance
                     var propDefinitions = Object(__WEBPACK_IMPORTED_MODULE_4__utils__.e)(this.constructor);
                     var props = {};
                     Object(__WEBPACK_IMPORTED_MODULE_1_common_micro_libs_src_jsutils_runtime_aliases__.f)(propDefinitions).forEach(function(propName) {
-                        propDefinitions[propName] && propDefinitions[propName]._isAlias || (props[propName] = propDefinitions[propName].default());
+                        if (!propDefinitions[propName] || !propDefinitions[propName]._isAlias) {
+                            var propValue = propDefinitions[propName].default();
+                            Object(__WEBPACK_IMPORTED_MODULE_1_common_micro_libs_src_jsutils_runtime_aliases__.e)(props, propName, {
+                                configurable: true,
+                                enumerable: true,
+                                get: function() {
+                                    return propValue;
+                                },
+                                set: function(newValue) {
+                                    newValue = propDefinitions[propName].filter.call(_this2, newValue);
+                                    return propValue = newValue;
+                                }
+                            });
+                        }
                     });
                     Object(__WEBPACK_IMPORTED_MODULE_1_common_micro_libs_src_jsutils_runtime_aliases__.e)(this, "_$props", {
                         value: props
@@ -645,7 +668,7 @@
                 mode: component.constructor.shadowMode
             }) : component._$ui = component;
             component.init();
-            state.readyWatcher = Object(__WEBPACK_IMPORTED_MODULE_2_common_micro_libs_src_jsutils_objectWatchProp__.a)(state, "ready", handleReadyChanges);
+            state.readyWatcher = Object(__WEBPACK_IMPORTED_MODULE_2_observables_src_objectWatchProp__.b)(state, "ready", handleReadyChanges);
             component.onDestroy(state.readyWatcher);
             handleReadyChanges();
         }
@@ -653,13 +676,30 @@
     /***/
     function(module, __webpack_exports__, __webpack_require__) {
         "use strict";
-        /* unused harmony export objectWatchProp */
+        /* unused harmony export OBSERVABLE_IDENTIFIER */
+        /* harmony export (immutable) */
+        __webpack_exports__.b = objectWatchProp;
+        /* unused harmony export setupObjState */
+        /* unused harmony export makeObservable */
+        /* unused harmony export queueCallbackAndScheduleRun */
+        /* unused harmony export destroyWatcher */
+        /* unused harmony export setDependencyTracker */
+        /* unused harmony export unsetDependencyTracker */
+        /* unused harmony export stopTrackerNotification */
+        /* unused harmony export makeArrayWatchable */
         /* harmony import */
-        var __WEBPACK_IMPORTED_MODULE_0__runtime_aliases__ = __webpack_require__(0);
+        var __WEBPACK_IMPORTED_MODULE_0_common_micro_libs_src_jsutils_runtime_aliases__ = __webpack_require__(0);
         /* harmony import */
-        var __WEBPACK_IMPORTED_MODULE_1__Set__ = __webpack_require__(6);
+        var __WEBPACK_IMPORTED_MODULE_1_common_micro_libs_src_jsutils_Set__ = __webpack_require__(6);
         /* harmony import */
-        var __WEBPACK_IMPORTED_MODULE_2__nextTick__ = __webpack_require__(10);
+        var __WEBPACK_IMPORTED_MODULE_2_common_micro_libs_src_jsutils_nextTick__ = __webpack_require__(10);
+        function _toConsumableArray(arr) {
+            if (Array.isArray(arr)) {
+                for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) arr2[i] = arr[i];
+                return arr2;
+            }
+            return Array.from(arr);
+        }
         //---------------------------------------------------------------------------
         var OBSERVABLE_IDENTIFIER = "___$observable$___";
         // FIXME: this should be a Symbol()
@@ -667,76 +707,330 @@
             configurable: true,
             enumerable: true
         };
+        var TRACKERS = new __WEBPACK_IMPORTED_MODULE_1_common_micro_libs_src_jsutils_Set__.a();
+        var WATCHER_IDENTIFIER = "___$watching$___";
+        var ARRAY_WATCHABLE_PROTO = "__$watchable$__";
+        var HAS_ARRAY_WATCHABLE_PROTO = "__$is" + ARRAY_WATCHABLE_PROTO;
+        var mutatingMethods = [ "pop", "push", "shift", "splice", "unshift", "sort", "reverse" ];
+        var isPureObject = function(obj) {
+            return obj && "[object Object]" === Object.prototype.toString.call(obj);
+        };
+        var NOTIFY_QUEUE = new __WEBPACK_IMPORTED_MODULE_1_common_micro_libs_src_jsutils_Set__.a();
+        var isNotifyQueued = false;
         /**
- * A lightweight utility to Watch an object's property and get notified when it changes.
+ * A lightweight utility to Watch an object's properties and get notified when it changes.
  *
  * @param {Object} obj
- * @param {String} prop
- * @param {Function} callback
  *
- * @return {Function}
+ * @param {String} [prop]
+ *  the property to be watched. If left undefined, then all existing properties are watched.
+ *
+ * @param {Function} [callback]
+ *  The callback to be executed when property or object changes. If left undefined, then
+ *  `obj` is only made observable (internal structure created and all current enumerable'
+ *  properties are made "watchable")
+ *
+ *  __NOTE:__
+ *  The callback will receive a new non-enumerable property named `stopWatchingAll` of
+ *  type `Function` that can be used to remove the given callback from all places where
+ *  it is being used to watch a property.
+ *
+ *
+ * @return {ObjectUnwatchProp}
  * Return a function to unwatch the property. Function also has a static property named
  * `destroy` that will do the same thing (ex. `unwatch.destroy()` is same as `unwatch()`)
  *
  * @example
  *
  * const oo = {};
- * const unWatchName = watchProp(oo, "name", () => console.log(`name changed: ${oo.name}`));
+ * const notifyNameChanged =() => console.log(`name changed: ${oo.name}`);
+ * const unWatchName = objectWatchProp(oo, "name", notifyNameChanged);
  *
  * oo.name = "paul"; // console outputs: name changed: paul
+ * unWatchName(); // stop watching
+ * notifyNameChanged.stopWatchingAll(); // callback's `stopWatchingAll()` can also be called.
  *
- * // stop watching
- * unWatchName();
+ * @example
+ *
+ * const oo = {
+ *      name: "paul",
+ *      country: "usa"
+ * };
+ *
+ * // watch all changes to object
+ * objectWatchProp(oo, null, () => console.log("Something changed in object"));
+ *
+ * // OR: make all properties of object observable
+ * objectWatchProp(oo);
  *
  */
         function objectWatchProp(obj, prop, callback) {
-            obj[OBSERVABLE_IDENTIFIER] || Object(__WEBPACK_IMPORTED_MODULE_0__runtime_aliases__.e)(obj, OBSERVABLE_IDENTIFIER, {
-                configurable: true,
-                writable: true,
-                value: {
-                    props: {}
-                }
-            });
+            obj[OBSERVABLE_IDENTIFIER] || setupObjState(obj);
+            // Convert prop to observable?
+            if (prop && !obj[OBSERVABLE_IDENTIFIER].props[prop]) {
+                setupPropState(obj, prop);
+                setupPropInterceptors(obj, prop);
+            } else prop && obj[OBSERVABLE_IDENTIFIER].props[prop].setupInterceptors && setupPropInterceptors(obj, prop);
+            if (prop && callback) obj[OBSERVABLE_IDENTIFIER].props[prop].storeCallback(callback); else if (!prop) {
+                makeObservable(obj, false);
+                callback && obj[OBSERVABLE_IDENTIFIER].storeCallback(callback);
+            }
+            /**
+     * Unwatch an object property or object.
+     *
+     * @typedef {Function} ObjectUnwatchProp
+     * @property {Function} destroy Same as function returned.
+     */
+            var unWatch = destroyWatcher.bind(obj, callback, prop ? obj[OBSERVABLE_IDENTIFIER].props[prop] : obj[OBSERVABLE_IDENTIFIER]);
+            unWatch.destroy = unWatch;
+            return unWatch;
+        }
+        function setupObjState(obj) {
+            if (!obj[OBSERVABLE_IDENTIFIER]) {
+                Object(__WEBPACK_IMPORTED_MODULE_0_common_micro_libs_src_jsutils_runtime_aliases__.e)(obj, OBSERVABLE_IDENTIFIER, {
+                    configurable: true,
+                    writable: true,
+                    deep: false,
+                    value: {
+                        props: {},
+                        dependents: new __WEBPACK_IMPORTED_MODULE_1_common_micro_libs_src_jsutils_Set__.a(),
+                        watchers: new __WEBPACK_IMPORTED_MODULE_1_common_micro_libs_src_jsutils_Set__.a(),
+                        storeCallback: storeCallback
+                    }
+                });
+                setupCallbackStore(obj[OBSERVABLE_IDENTIFIER].dependents, false);
+                setupCallbackStore(obj[OBSERVABLE_IDENTIFIER].watchers, true);
+            }
+        }
+        function setupCallbackStore(store) {
+            var async = arguments.length > 1 && void 0 !== arguments[1] && arguments[1];
+            store.async = async;
+            store.isQueued = false;
+            store.notify = notify;
+        }
+        function setupPropState(obj, prop) {
             if (!obj[OBSERVABLE_IDENTIFIER].props[prop]) {
                 obj[OBSERVABLE_IDENTIFIER].props[prop] = {
                     val: void 0,
-                    watchers: new __WEBPACK_IMPORTED_MODULE_1__Set__.a(),
-                    isQueued: false,
-                    notify: function() {
-                        var _this = this;
-                        if (this.isQueued) return;
-                        this.isQueued = true;
-                        Object(__WEBPACK_IMPORTED_MODULE_2__nextTick__.a)(function() {
-                            _this.watchers.forEach(function(cb) {
-                                return cb();
-                            });
-                            _this.isQueued = false;
-                        });
-                    }
+                    dependents: new __WEBPACK_IMPORTED_MODULE_1_common_micro_libs_src_jsutils_Set__.a(),
+                    watchers: new __WEBPACK_IMPORTED_MODULE_1_common_micro_libs_src_jsutils_Set__.a(),
+                    parent: obj[OBSERVABLE_IDENTIFIER],
+                    storeCallback: storeCallback,
+                    setupInterceptors: true,
+                    deep: obj[OBSERVABLE_IDENTIFIER].deep
                 };
-                var propOldDescriptor = Object.getOwnPropertyDescriptor(obj, prop) || DEFAULT_PROP_DEFINITION;
-                propOldDescriptor.get || (obj[OBSERVABLE_IDENTIFIER].props[prop].val = obj[prop]);
-                Object(__WEBPACK_IMPORTED_MODULE_0__runtime_aliases__.e)(obj, prop, {
-                    configurable: propOldDescriptor.configurable || false,
-                    enumerable: propOldDescriptor.enumerable || false,
-                    get: function() {
-                        if (propOldDescriptor.get) return propOldDescriptor.get.call(obj);
-                        return obj[OBSERVABLE_IDENTIFIER].props[prop].val;
-                    },
-                    set: function(newVal) {
-                        var priorVal = obj[prop];
-                        propOldDescriptor.set ? newVal = propOldDescriptor.set.call(obj, newVal) : obj[OBSERVABLE_IDENTIFIER].props[prop].val = newVal;
-                        newVal !== priorVal && obj[OBSERVABLE_IDENTIFIER].props[prop].notify();
-                        return newVal;
+                setupCallbackStore(obj[OBSERVABLE_IDENTIFIER].props[prop].dependents, false);
+                setupCallbackStore(obj[OBSERVABLE_IDENTIFIER].props[prop].watchers, true);
+            }
+            return obj[OBSERVABLE_IDENTIFIER].props[prop];
+        }
+        function setupPropInterceptors(obj, prop) {
+            var propOldDescriptor = Object.getOwnPropertyDescriptor(obj, prop) || DEFAULT_PROP_DEFINITION;
+            if (!propOldDescriptor.get) {
+                obj[OBSERVABLE_IDENTIFIER].props[prop].val = obj[prop];
+                // If prop is marked as `deep` then walk the value and convert it to observables
+                obj[OBSERVABLE_IDENTIFIER].props[prop].deep && makeObservable(obj[OBSERVABLE_IDENTIFIER].props[prop].val);
+            }
+            Object(__WEBPACK_IMPORTED_MODULE_0_common_micro_libs_src_jsutils_runtime_aliases__.e)(obj, prop, {
+                configurable: propOldDescriptor.configurable || false,
+                enumerable: propOldDescriptor.enumerable || false,
+                get: function() {
+                    TRACKERS.size && TRACKERS.forEach(obj[OBSERVABLE_IDENTIFIER].props[prop].storeCallback, obj[OBSERVABLE_IDENTIFIER].props[prop]);
+                    if (propOldDescriptor.get) return propOldDescriptor.get.call(obj);
+                    return obj[OBSERVABLE_IDENTIFIER].props[prop].val;
+                },
+                set: function(newVal) {
+                    var priorVal = obj[prop];
+                    propOldDescriptor.set ? newVal = propOldDescriptor.set.call(obj, newVal) : obj[OBSERVABLE_IDENTIFIER].props[prop].val = newVal;
+                    // If this `deep` is true and the new value is an object,
+                    // then ensure its observable
+                    obj[OBSERVABLE_IDENTIFIER].props[prop].deep && makeObservable(newVal);
+                    if (newVal !== priorVal) {
+                        obj[OBSERVABLE_IDENTIFIER].props[prop].watchers.notify();
+                        obj[OBSERVABLE_IDENTIFIER].props[prop].dependents.notify();
+                        obj[OBSERVABLE_IDENTIFIER].watchers.notify();
+                    }
+                    return newVal;
+                }
+            });
+            obj[OBSERVABLE_IDENTIFIER].props[prop].setupInterceptors = false;
+            // Notify object watchers that a new prop was added
+            propOldDescriptor === DEFAULT_PROP_DEFINITION && obj[OBSERVABLE_IDENTIFIER].watchers.notify();
+        }
+        /**
+ * Makes an object (deep) observable.
+ *
+ * @param {Object|Array} obj
+ * @param {Boolean} [walk=true]
+ *  If `true` (default), the object's property values are walked and
+ *  also make observable.
+ * @param {Boolean} [force=false]
+ *  if true, then even if object looks like it might have already been
+ *  converted to an observable, it will still be walked
+ *  (if `walk` is `true`)
+ *
+ * @return {Object|Array} Original `obj` is returned
+ */
+        function makeObservable(obj) {
+            var walk = !(arguments.length > 1 && void 0 !== arguments[1]) || arguments[1];
+            var force = arguments.length > 2 && void 0 !== arguments[2] && arguments[2];
+            if (!isPureObject(obj) && !Object(__WEBPACK_IMPORTED_MODULE_0_common_micro_libs_src_jsutils_runtime_aliases__.c)(obj)) return obj;
+            obj[OBSERVABLE_IDENTIFIER] || (// OBJECT
+            isPureObject(obj) ? setupObjState(obj, force) : Object(__WEBPACK_IMPORTED_MODULE_0_common_micro_libs_src_jsutils_runtime_aliases__.c)(obj) && makeArrayWatchable(obj));
+            // If object is marked as "deep" and we are not forcing the walk,
+            // then no need to do anything. Otherwise, mark this object as
+            // being `deep` and keep going
+            if (!force && obj[OBSERVABLE_IDENTIFIER].deep) return;
+            walk && (obj[OBSERVABLE_IDENTIFIER].deep = true);
+            Object(__WEBPACK_IMPORTED_MODULE_0_common_micro_libs_src_jsutils_runtime_aliases__.c)(obj) ? walkArray(obj) : walkObject(obj);
+            return obj;
+        }
+        function walkArray(arr, force) {
+            for (var i = 0, t = arr.length; i < t; i++) makeObservable(arr[i], true, force);
+        }
+        function walkObject(obj, force) {
+            // make ALL props observable
+            var keys = Object(__WEBPACK_IMPORTED_MODULE_0_common_micro_libs_src_jsutils_runtime_aliases__.f)(obj);
+            for (var i = 0, t = keys.length; i < t; i++) {
+                if (!obj[OBSERVABLE_IDENTIFIER].props[keys[i]]) {
+                    setupPropState(obj, keys[i]);
+                    setupPropInterceptors(obj, keys[i]);
+                }
+                // Do we need to walk this property's value?
+                if (!obj[OBSERVABLE_IDENTIFIER].props[keys[i]].deep || force) {
+                    obj[OBSERVABLE_IDENTIFIER].props[keys[i]].deep = true;
+                    isPureObject(obj[keys[i]]) && makeObservable(obj[keys[i]], true, force);
+                }
+            }
+        }
+        function notify() {
+            // this: new Set(). Set instance could have two additional attributes: async ++ isQueued
+            if (!this.size) return;
+            // If the watcher Set() is synchronous, then execute the callbacks now
+            this.async ? this.forEach(pushCallbacksToQueue) : this.forEach(execCallback);
+            queueCallbackAndScheduleRun();
+        }
+        function queueCallbackAndScheduleRun(cb) {
+            cb && pushCallbacksToQueue(cb);
+            if (isNotifyQueued || !NOTIFY_QUEUE.size) return;
+            isNotifyQueued = true;
+            Object(__WEBPACK_IMPORTED_MODULE_2_common_micro_libs_src_jsutils_nextTick__.a)(flushQueue);
+        }
+        function pushCallbacksToQueue(callback) {
+            NOTIFY_QUEUE.add(callback);
+        }
+        function execCallback(cb) {
+            cb();
+        }
+        function flushQueue() {
+            var queuedCallbacks = [].concat(_toConsumableArray(NOTIFY_QUEUE));
+            NOTIFY_QUEUE.clear();
+            isNotifyQueued = false;
+            for (var x = 0, total = queuedCallbacks.length; x < total; x++) queuedCallbacks[x]();
+            queuedCallbacks.length = 0;
+        }
+        function storeCallback(callback) {
+            // this === PropState
+            if (callback.asDependent && this.dependents) {
+                setCallbackAsWatcherOf(callback, this.dependents);
+                this.dependents.add(callback);
+            } else {
+                setCallbackAsWatcherOf(callback, this.watchers);
+                this.watchers.add(callback);
+            }
+        }
+        function destroyWatcher(callback, propSetup) {
+            // this == obj
+            if (callback) {
+                // Object state does not have dependents
+                if (propSetup.dependents) {
+                    propSetup.dependents.delete(callback);
+                    unsetCallbackAsWatcherOf(callback, propSetup.dependents);
+                }
+                propSetup.watchers.delete(callback);
+                unsetCallbackAsWatcherOf(callback, propSetup.watchers);
+            }
+        }
+        /**
+ * Store a reference to the Set instance provided on input, on the callback.
+ * @private
+ * @param {Function} callback
+ * @param {Set} watchersSet
+ */
+        function setCallbackAsWatcherOf(callback, watchersSet) {
+            if (!callback[WATCHER_IDENTIFIER]) {
+                Object(__WEBPACK_IMPORTED_MODULE_0_common_micro_libs_src_jsutils_runtime_aliases__.e)(callback, WATCHER_IDENTIFIER, {
+                    configurable: true,
+                    writable: true,
+                    value: {
+                        watching: new __WEBPACK_IMPORTED_MODULE_1_common_micro_libs_src_jsutils_Set__.a()
+                    }
+                });
+                Object(__WEBPACK_IMPORTED_MODULE_0_common_micro_libs_src_jsutils_runtime_aliases__.e)(callback, "stopWatchingAll", {
+                    configurable: true,
+                    writable: true,
+                    value: function() {
+                        callback[WATCHER_IDENTIFIER].watching.forEach(function(watcherList) {
+                            return watcherList.delete(callback);
+                        });
+                        callback[WATCHER_IDENTIFIER].watching.clear();
                     }
                 });
             }
-            obj[OBSERVABLE_IDENTIFIER].props[prop].watchers.add(callback);
-            var unWatch = function() {
-                return obj[OBSERVABLE_IDENTIFIER].props[prop].watchers.delete(callback);
-            };
-            unWatch.destroy = unWatch;
-            return unWatch;
+            callback[WATCHER_IDENTIFIER].watching.add(watchersSet);
+        }
+        /**
+ * Removes the reference to the given Set instance from the callback function provided
+ * @private
+ * @param {Function} callback
+ * @param {Set} watchersSet
+ */
+        function unsetCallbackAsWatcherOf(callback, watchersSet) {
+            callback[WATCHER_IDENTIFIER] && callback[WATCHER_IDENTIFIER].watching.delete(watchersSet);
+        }
+        function makeArrayWatchable(arr) {
+            arr[OBSERVABLE_IDENTIFIER] || setupObjState(arr);
+            // If array already has a watchable prototype, then exit
+            if (arr[HAS_ARRAY_WATCHABLE_PROTO]) return;
+            var arrCurrentProto = arr.__proto__;
+            // eslint-disable-line
+            // Create prototype interceptors?
+            if (!arrCurrentProto[ARRAY_WATCHABLE_PROTO]) {
+                var arrProtoInterceptor = Object.create(arrCurrentProto);
+                mutatingMethods.forEach(function(method) {
+                    Object(__WEBPACK_IMPORTED_MODULE_0_common_micro_libs_src_jsutils_runtime_aliases__.e)(arrProtoInterceptor, method, {
+                        configurable: true,
+                        writable: true,
+                        value: function() {
+                            var _arrCurrentProto$meth;
+                            for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) args[_key] = arguments[_key];
+                            var response = (_arrCurrentProto$meth = arrCurrentProto[method]).call.apply(_arrCurrentProto$meth, [ this ].concat(args));
+                            this[OBSERVABLE_IDENTIFIER].dependents.notify();
+                            this[OBSERVABLE_IDENTIFIER].watchers.notify();
+                            return response;
+                        }
+                    });
+                });
+                // VALUE ADD: include a `size` read only attribute
+                Object(__WEBPACK_IMPORTED_MODULE_0_common_micro_libs_src_jsutils_runtime_aliases__.e)(arrProtoInterceptor, "size", {
+                    configurable: true,
+                    get: function() {
+                        TRACKERS.size && TRACKERS.forEach(this[OBSERVABLE_IDENTIFIER].storeCallback, this[OBSERVABLE_IDENTIFIER]);
+                        return this.length;
+                    }
+                });
+                // Add flag to new array interceptor prototype indicating its watchable
+                Object(__WEBPACK_IMPORTED_MODULE_0_common_micro_libs_src_jsutils_runtime_aliases__.e)(arrProtoInterceptor, HAS_ARRAY_WATCHABLE_PROTO, {
+                    value: true
+                });
+                // Store the new interceptor prototype on the real prototype
+                Object(__WEBPACK_IMPORTED_MODULE_0_common_micro_libs_src_jsutils_runtime_aliases__.e)(arrCurrentProto, ARRAY_WATCHABLE_PROTO, {
+                    configurable: true,
+                    writable: true,
+                    value: arrProtoInterceptor
+                });
+            }
+            arr.__proto__ = arrCurrentProto[ARRAY_WATCHABLE_PROTO];
         }
         /* harmony default export */
         __webpack_exports__.a = objectWatchProp;
@@ -850,11 +1144,11 @@
                 }
             },
             forEach: {
-                value: function(cb) {
+                value: function(cb, thisArg) {
                     var _this = this;
                     this._.forEach(function(item) {
                         return cb(item, item, _this);
-                    });
+                    }, thisArg);
                 }
             }
         }, __WEBPACK_IMPORTED_MODULE_2__runtime_aliases__.a, {
@@ -1165,7 +1459,7 @@
         function setupProp(options, Proto, prop, descriptor) {
             var getter = descriptor.get;
             var setter = descriptor.set;
-            var propDef = Object(__WEBPACK_IMPORTED_MODULE_0_common_micro_libs_src_jsutils_objectExtend__.a)(getPropDef(Proto, prop, getter), options);
+            var propDef = Object(__WEBPACK_IMPORTED_MODULE_0_common_micro_libs_src_jsutils_objectExtend__.a)(getPropDef(Proto, prop, getter, setter), options);
             descriptor.get = descriptor.set = lazyProp(prop, getter, setter);
             // Create a instance property for each alias as well
             propDef.aliases.length && propDef.aliases.forEach(function(propAliasName) {
@@ -1188,7 +1482,7 @@
             });
             return Proto.constructor.propsDef;
         }
-        function getPropDef(Proto, name, getter) {
+        function getPropDef(Proto, name, getter, setter) {
             var classProps = getClassProps(Proto);
             if (!classProps[name]) {
                 classProps[name] = {
@@ -1196,6 +1490,7 @@
                     attr: false,
                     required: false,
                     default: getter || NOOP,
+                    filter: setter || NOOP,
                     aliases: [ name.toLowerCase() ]
                 };
                 RE_UPPER_CASE_LETTERS.test(name) && classProps[name].aliases.push(Object(__WEBPACK_IMPORTED_MODULE_2__utils__.d)(name));
@@ -1228,7 +1523,6 @@
                         return this.props[writeToPropName];
                     },
                     set: function(newValue) {
-                        setter && (newValue = setter.call(this, newValue));
                         return this.props[writeToPropName] = newValue;
                     }
                 });

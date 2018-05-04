@@ -1,6 +1,6 @@
 import objectExtend from "common-micro-libs/src/jsutils/objectExtend"
 import dataStore from "common-micro-libs/src/jsutils/dataStore"
-import objectWatchProp from "common-micro-libs/src/jsutils/objectWatchProp"
+import objectWatchProp from "observables/src/objectWatchProp"
 import { isArray, objectKeys } from "common-micro-libs/src/jsutils/runtime-aliases"
 
 //============================================================================
