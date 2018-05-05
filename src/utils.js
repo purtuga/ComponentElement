@@ -120,18 +120,33 @@ export function getComponentClassState(ComponentClass) {
  *
  * @return {HTMLElement}
  */
-export function getComponentTemplate(componentInstance) {
-    if ("string" === typeof componentInstance.constructor.template) {
-        const classState = getComponentClassState(componentInstance.constructor);
+export function getComponentInstanceTemplate(componentInstance) {
+    return componentInstance.ownerDocument.importNode(
+        getComponentTemplate(componentInstance.constructor).content,
+        true
+    );
+}
+
+/**
+ * Returns a `HTMLTemplateElement` that holds the ComponentElement's template
+ *
+ * @param {ComponentElement} Component
+ *  The ComponentElement class
+ *
+ * @return {HTMLTemplateElement}
+ */
+export function getComponentTemplate(Component) {
+    if ("string" === typeof Component.template) {
+        const classState = getComponentClassState(Component);
 
         if (!classState.template) {
-            classState.template = componentInstance.ownerDocument.createElement("template");
-            classState.template.innerHTML = componentInstance.constructor.template;
+            classState.template = document.createElement("template");
+            classState.template.innerHTML = Component.template;
         }
 
-        return componentInstance.ownerDocument.importNode(classState.template.content, true);
+        return classState.template;
     }
 
-    return componentInstance.ownerDocument.importNode(componentInstance.constructor.template.content, true);
+    return Component.template;
 }
 

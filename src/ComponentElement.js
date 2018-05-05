@@ -6,9 +6,13 @@ import {
     getState,
     PRIVATE,
     getPropsDefinition,
-    getComponentTemplate,
+    getComponentInstanceTemplate,
     getComponentClassState
 } from "./utils"
+import {
+    prepareComponentTemplate,
+    styleComponentInstanceElement
+} from "./polyfill-support"
 
 //============================================================================
 const SHADOW_DOM_SUPPORTED = document.head.createShadowRoot || document.head.attachShadow;
@@ -48,6 +52,7 @@ export class ComponentElement extends HTMLElement {
      * Registers the web component. Uses tagName as default input param
      */
     static define(name) {
+        prepareComponentTemplate(this, name || this.tagName);
         window.customElements.define(name || this.tagName, this);
     }
 
@@ -309,6 +314,8 @@ export class ComponentElement extends HTMLElement {
     //~~~~~~~~~~~~~~~~~~~~~~ BUITINS ~~~~~~~~~~~~~~~~~~~~~~
 
     connectedCallback() {
+        styleComponentInstanceElement(this);
+
         // Cancel destroy if it is queued
         if (PRIVATE.has(this)) {
             const state = getState(this);
@@ -358,7 +365,7 @@ function setupComponent(component) {
         if (state.ready) {
             if (!state.hasTemplate) {
                 // component._$ui.innerHTML = component.constructor.template;
-                component._$ui.appendChild(getComponentTemplate(component));
+                component._$ui.appendChild(getComponentInstanceTemplate(component));
                 state.hasTemplate = true;
             }
 
