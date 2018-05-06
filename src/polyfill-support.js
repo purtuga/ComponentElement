@@ -32,3 +32,15 @@ export function styleComponentInstanceElement(componentInstance) {
         GLOBAL.ShadyCSS.styleElement(componentInstance);
     }
 }
+
+/**
+ * Restyles a component's sub-tree. Use it when DOM might have been altered dynamically
+ * and polyfilled styles needs to be applied.
+ *
+ * @param {HTMLElement} componentInstance
+ */
+export function reStyleComponentInstanceSubtree(componentInstance) {
+    if (supportsShadyCSS()) {
+        GLOBAL.ShadyCSS.styleSubtree(componentInstance)
+    }
+}
