@@ -23,6 +23,8 @@ const EV_DEFAULT_INIT = { bubbles: false, cancelable: false, composed: false };
  * A generic class for building widgets based on HTML Custom Elements.
  *
  * @extends HTMLElement
+ *
+ * @fires ComponentElement#
  */
 export class ComponentElement extends HTMLElement {
     constructor(...args) {
@@ -84,6 +86,23 @@ export class ComponentElement extends HTMLElement {
      * @type {String|HTMLTemplateElement}
      */
     static get template() { return "<div></div>"; }
+
+    /**
+     * Renderer for the template and return what should be inserted into shadowDom.
+     * By default, this base class will simply clone the `template` defined in the
+     * static property above. This method will called prior to doing that, and if
+     * it returns a `truthy` value, then its assume to be either an HTMLElement or
+     * DocumentFragment with the element's instance UI (which will be inserted into
+     * shadowDom).
+     *
+     * @param {ComponentElement} eleInstance
+     *  The `ComponentElement` instance being initialized
+     *
+     * @return {HTMLElement|DocumentFragment}
+     */
+    static renderTemplate(eleInstance) {
+        return getComponentInstanceTemplate(eleInstance);
+    }
 
     /**
      * The default initialization options for the `emit()` method.
@@ -365,7 +384,9 @@ function setupComponent(component) {
         if (state.ready) {
             if (!state.hasTemplate) {
                 // component._$ui.innerHTML = component.constructor.template;
-                component._$ui.appendChild(getComponentInstanceTemplate(component));
+                component._$ui.appendChild(
+                    component.constructor.renderTemplate(component)
+                );
                 state.hasTemplate = true;
             }
 
