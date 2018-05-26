@@ -24,7 +24,6 @@ const EV_DEFAULT_INIT = { bubbles: false, cancelable: false, composed: false };
  *
  * @extends HTMLElement
  *
- * @fires ComponentElement#
  */
 export class ComponentElement extends HTMLElement {
     constructor(...args) {
@@ -94,6 +93,10 @@ export class ComponentElement extends HTMLElement {
      * it returns a `truthy` value, then its assume to be either an HTMLElement or
      * DocumentFragment with the element's instance UI (which will be inserted into
      * shadowDom).
+     *
+     * **NOTE**: Should always use `getComponentInstanceTemplate` or `getComponentTemplate`
+     * to retrieve the template or its content, since it is manipulated in browsers that
+     * use the polyfills to make the template compatible in those platforms.
      *
      * @param {ComponentElement} eleInstance
      *  The `ComponentElement` instance being initialized
