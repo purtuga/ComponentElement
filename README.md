@@ -1,6 +1,13 @@
 # ComponentElement
 
-A base class for building Widgets using CustomElements
+A base class for building Widgets using CustomElements.
+
+Features:
+
+-   Normalizes the use of Props by allowing them to be set via html Attributes, or on the Element's instance.
+-   Creates aliases for camelCase props so that they can be set in all lowercase or as ka-bob case.
+-   All props are stored in one location (`element.props`).
+-   Initialization is delayed until all required props are provided (assist with use of data binding libraries)
 
 ## Example
 
@@ -34,7 +41,8 @@ Include a [polyfill](https://github.com/WebReflection/document-register-element)
 <head>
     <script>
         if (!('customElements' in window)) {
-            document.write('<' + 'script src="//cdnjs.cloudflare.com/ajax/libs/document-register-element/1.7.1/document-register-element.js"></' + 'script>');
+            document.write('<' + 'script src="/' + '/cdnjs.cloudflare.com/ajax/libs/core-js/2.5.3/core.min.js"></' + 'script>');
+            document.write('<' + 'script src="/' + '/cdnjs.cloudflare.com/ajax/libs/webcomponentsjs/1.2.0/webcomponents-lite.js"></' + 'script>');
             console.log("CE pollyfill requested");
         }
     </script>
@@ -91,7 +99,35 @@ prop({
 
 ## Lifecycle
 
-tbd...
+The following lifecycle hooks are provided on the Element's instance. These are all instance methods that can be defined on your custom element.
+
+```
+  init      <-----------------------<
+    |                               |
+    |                               |
+  ready     <---------<             |
+    |                 |             |
+    |                 |             |
+    |              unready      destroyed
+    |                 ^             |
+    |                /|             |
+    |     ----------' |             |
+    |    /            |             |
+  mounted             |             |
+   |    ^             |             |
+   |     \            |             |
+   |      \           |             |
+   |       \          |             |
+   |        ^         |             |
+  unmounted +---------^-------------^
+              
+```
+
+-   `init()`: called when the component is first initialized (called from constructor). Can be used (for example) to show an initial UI state while the rest completes (ex. loading...). At this stage, ShadowRoot has been created (if static property `useShadow` is true and browser supports it, but there is no UI yet (see below)
+-   `ready()`: called when all required props have been provided. At this point, the Template is inserted into the root of the Elements, replacing any prior content.
+-   `mounted()`: Happens only after `init` and only if Element is part of DOM (CE `connectedCallback` has been triggered). This method can be called multiple times, since ELement can be removed/added to DOM multiple times.
+-   `unmounted()`: Happens only if Element is mounted. Could be called multiple times.  When unmounted, element's destroy logic is automatically called (after `delayDestroy` static property value has been reached). 
+
 
 
 ## License
@@ -103,6 +139,7 @@ ____
 ## TODO
 
 - [x] Support for Class.propsDef (will replace current private object. Will allow for use without Decorators)
+- [ ] Support same level of prop reflection as the @prop decorator
 - [ ] Support reflecting props to attribute (but only if they were defined by user as attr? or always? maybe option like: reflect: true || reflect: "always")
 - [ ] support Boolean props (@prop(type: Boolean)) - when set as "attr: true", then removeAttribute/setAttribute.
 - [x] Support html attributes defined as ka-bab syntax

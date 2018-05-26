@@ -17,6 +17,9 @@ const supportsShadyCSS = () => !!GLOBAL.ShadyCSS;
  * @param {String} tagName
  */
 export function prepareComponentTemplate(Component, tagName){
+    // FIXME: need additional checks here. ONly use shady if ShadowDom is not supported natively.
+    //              need to use: ShadyCSS.nativeShadow to check if shadowroot is supported
+    //              Also: should we check the Component's "useShadow" property?
     if (supportsShadyCSS()) {
         GLOBAL.ShadyCSS.prepareTemplate(getComponentTemplate(Component), tagName);
     }
