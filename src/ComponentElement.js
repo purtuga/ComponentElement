@@ -104,6 +104,7 @@ export class ComponentElement extends HTMLElement {
      * @return {HTMLElement|DocumentFragment}
      */
     static renderTemplate(eleInstance) {
+        // FIXME: should two additional params be provided - one to get templateInstance and another to get templateElement?
         return getComponentInstanceTemplate(eleInstance);
     }
 

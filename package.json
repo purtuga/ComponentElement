@@ -28,9 +28,11 @@
     "url": "https://github.com/purtuga/ComponentElement/issues"
   },
   "homepage": "https://github.com/purtuga/ComponentElement#readme",
-  "devDependencies": {
-    "project-base": "github:purtuga/project-base#master",
+  "dependencies": {
     "common-micro-libs": "github:purtuga/common-micro-libs#master",
     "observables": "github:purtuga/observables"
+  },
+  "devDependencies": {
+    "project-base": "github:purtuga/project-base#master"
   }
 }

@@ -126,7 +126,8 @@ The following lifecycle hooks are provided on the Element's instance. These are 
 -   `init()`: called when the component is first initialized (called from constructor). Can be used (for example) to show an initial UI state while the rest completes (ex. loading...). At this stage, ShadowRoot has been created (if static property `useShadow` is true and browser supports it, but there is no UI yet (see below)
 -   `ready()`: called when all required props have been provided. At this point, the Template is inserted into the root of the Elements, replacing any prior content.
 -   `mounted()`: Happens only after `init` and only if Element is part of DOM (CE `connectedCallback` has been triggered). This method can be called multiple times, since ELement can be removed/added to DOM multiple times.
--   `unmounted()`: Happens only if Element is mounted. Could be called multiple times.  When unmounted, element's destroy logic is automatically called (after `delayDestroy` static property value has been reached). 
+-   `unready`: Happens if at any point required `props` are removed/unset.
+-   `unmounted()`: Happens only after an Element is mounted. Could be called multiple times.  When unmounted, element's destroy logic is automatically called (after `delayDestroy` static property value has been reached).  When unmounted, if required props change, component could also invoke `unready`, but only if before `destroy` logic is invoked.
 
 
 
@@ -141,7 +142,7 @@ ____
 - [x] Support for Class.propsDef (will replace current private object. Will allow for use without Decorators)
 - [ ] Support same level of prop reflection as the @prop decorator
 - [ ] Support reflecting props to attribute (but only if they were defined by user as attr? or always? maybe option like: reflect: true || reflect: "always")
-- [ ] support Boolean props (@prop(type: Boolean)) - when set as "attr: true", then removeAttribute/setAttribute.
+- [ ] support Boolean props (`@prop(type: Boolean)`) - when set as "attr: true", then removeAttribute/setAttribute.
 - [x] Support html attributes defined as ka-bab syntax
 - [x] create two new instance methods: `$()` = select single element, and: `$$()` select multiples
 - [x] expose instance `$ui` -- Pointer to either shadowRoot or element
@@ -150,6 +151,7 @@ ____
 - [ ] Integrate ShadyCSS if detected in Global and env. does not support Scoped CSS
 - [x] Remove dependency on ObservableData. Probably under-utilized for base class functionality.
 - [x] Add onPropChange(callback) method
+- [ ] Create new `@bind` decorator - adds method to the prototype as a lazy getter, which on first call, will bind the method to the instance.
 
 
 
