@@ -35,14 +35,17 @@ export default class MyWidget extends ComponentElement {
 
 ## Polyfill
 
-Include a [polyfill](https://github.com/WebReflection/document-register-element) prior to any web component being loaded.  Something like this will work:
+Include a [polyfill](https://www.webcomponents.org/polyfills) prior to any web component being loaded.  Something like this will work:
  
 ```html
 <head>
     <script>
-        if (!('customElements' in window)) {
+        if (!("Promise" in window)) {
             document.write('<' + 'script src="/' + '/cdnjs.cloudflare.com/ajax/libs/core-js/2.5.3/core.min.js"></' + 'script>');
-            document.write('<' + 'script src="/' + '/cdnjs.cloudflare.com/ajax/libs/webcomponentsjs/1.2.0/webcomponents-lite.js"></' + 'script>');
+            console.log("core-js requested");
+        }
+        if (!('customElements' in window)) {
+            document.write('<' + 'script src="/' + '/rawgit.com/webcomponents/webcomponentsjs/master/webcomponents-bundle.js"></' + 'script>');
             console.log("CE pollyfill requested");
         }
     </script>
@@ -61,6 +64,7 @@ Props can be defined one of two ways:
 ### A. Via Static property `propsDef`
 
 tbd...
+
 
 ### B. Via `@prop` Decorator
 
