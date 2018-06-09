@@ -63,7 +63,7 @@ export class ComponentElement extends HTMLElement {
      *
      * @type {Number}
      */
-    static get delayDestroy() { return 500; }
+    static get delayDestroy() { return 250; }
 
     /**
      * If Shadow DOM should be used. Default `true`
