@@ -13,7 +13,11 @@ export function bind(Proto, prop, descriptor) {
         delete descriptor.writable;
 
         descriptor.get = function () {
-            // FIXME: this normally fails in IE... need to fix (similar to fix done in lazyProp below)
+            if (this[`__settingUp:${prop}`]) {
+                return;
+            }
+            this[`__settingUp:${prop}`] = true; // Fuck you IE!
+
             const fn = propFn.bind(this);
             objectDefineProperty(this, prop, {
                 configurable: descriptor.configurable,
@@ -21,6 +25,7 @@ export function bind(Proto, prop, descriptor) {
                 writable: writable,
                 value: fn
             });
+            delete this[`__settingUp:${prop}`];
             return fn;
         };
         return descriptor;
