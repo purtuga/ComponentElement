@@ -63,7 +63,7 @@ export class ComponentElement extends HTMLElement {
      *
      * @type {Number}
      */
-    static get delayDestroy() { return 5000; }
+    static get delayDestroy() { return 500; }
 
     /**
      * If Shadow DOM should be used. Default `true`
@@ -153,6 +153,9 @@ export class ComponentElement extends HTMLElement {
                 state.destroyQueued = null;
             }
             state.destroyCallbacks.splice(0).forEach(cb => cb());
+        }
+        if (this.parentNode) {
+            this.parentNode.removeChild(this);
         }
     }
 
