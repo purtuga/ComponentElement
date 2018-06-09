@@ -1,6 +1,6 @@
 import objectExtend from "common-micro-libs/src/jsutils/objectExtend"
 import { objectDefineProperty } from "common-micro-libs/src/jsutils/runtime-aliases"
-import { getKebabCase, getPropsDefinition } from "../utils"
+import { getKebabCase, getPropsDefinition, elementHasAttribute } from "../utils"
 
 //===============================================================================
 const RE_UPPER_CASE_LETTERS = /[A-Z]/;
@@ -37,7 +37,7 @@ function setupProp(options, Proto, prop, descriptor) {
         options.attr = true;
 
         getter = descriptor.get = function () {
-            return this.hasAttribute(prop);
+            return elementHasAttribute(this, prop);
         };
 
         setter = descriptor.set = function (value) {
@@ -46,14 +46,14 @@ function setupProp(options, Proto, prop, descriptor) {
             // Do this only if the `value` is boolean - because when an attribute is added to the
             // element, its value should be empty string.
             if ("boolean" === typeof value) {
-                if (value && !this.hasAttribute(prop)) {
+                if (value && !elementHasAttribute(this, prop)) {
                     this.setAttribute(prop, "");
                 }
-                else if (!value && this.hasAttribute(prop)) {
+                else if (!value && elementHasAttribute(this, prop)) {
                     this.removeAttribute(prop);
                 }
             }
-            return this.hasAttribute(prop);
+            return elementHasAttribute(this, prop);
         };
     }
 
