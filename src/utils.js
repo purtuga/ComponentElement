@@ -6,8 +6,17 @@ import { isArray, objectKeys, functionBindCall } from "common-micro-libs/src/jsu
 //============================================================================
 export const PRIVATE = dataStore.create();
 
-// DOM API aliases
-export const elementHasAttribute = functionBindCall(Element.prototype.hasAttribute);
+/**
+ * Checks if the element has an attribute set that matches any of the aliases for a prop
+ *
+ * @param {ComponentElement} ele
+ * @param {ComponentElement~PropDefinition} propDef
+ *
+ * @return {Boolean}
+ */
+export function elementHasAttributeForProp(ele, propDef) {
+    return propDef.aliases.some(propAlias => ele.hasAttribute(propAlias));
+}
 
 
 export function getState(instance) {

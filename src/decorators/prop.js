@@ -1,6 +1,6 @@
 import objectExtend from "common-micro-libs/src/jsutils/objectExtend"
 import { objectDefineProperty } from "common-micro-libs/src/jsutils/runtime-aliases"
-import { getKebabCase, getPropsDefinition, elementHasAttribute } from "../utils"
+import { getKebabCase, getPropsDefinition, elementHasAttributeForProp } from "../utils"
 
 //===============================================================================
 const RE_UPPER_CASE_LETTERS = /[A-Z]/;
@@ -28,6 +28,7 @@ export function prop(...args) {
 function setupProp(options, Proto, prop, descriptor) {
     let getter = descriptor.get;
     let setter = descriptor.set;
+    let propDef;
 
     // If prop is defined as `boolean` then ensure that the value stored is
     // always a boolean based upon whether the prop is on the element or not
@@ -37,7 +38,7 @@ function setupProp(options, Proto, prop, descriptor) {
         options.attr = true;
 
         getter = descriptor.get = function () {
-            return elementHasAttribute(this, prop);
+            return elementHasAttributeForProp(this, propDef);
         };
 
         setter = descriptor.set = function (value) {
@@ -46,18 +47,18 @@ function setupProp(options, Proto, prop, descriptor) {
             // Do this only if the `value` is boolean - because when an attribute is added to the
             // element, its value should be empty string.
             if ("boolean" === typeof value) {
-                if (value && !elementHasAttribute(this, prop)) {
+                if (value && !elementHasAttributeForProp(this, propDef)) {
                     this.setAttribute(prop, "");
                 }
-                else if (!value && elementHasAttribute(this, prop)) {
+                else if (!value && elementHasAttributeForProp(this, propDef)) {
                     this.removeAttribute(prop);
                 }
             }
-            return elementHasAttribute(this, prop);
+            return elementHasAttributeForProp(this, propDef);
         };
     }
 
-    const propDef = objectExtend(getPropDef(Proto, prop, getter, setter), options);
+    propDef = objectExtend(getPropDef(Proto, prop, getter, setter), options);
     descriptor.get = descriptor.set = lazyProp(prop, getter, setter);
 
     // Create a instance property for each alias as well
