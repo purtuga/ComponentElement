@@ -146,7 +146,7 @@ ____
 - [x] Support for Class.propsDef (will replace current private object. Will allow for use without Decorators)
 - [ ] Support same level of prop reflection as the @prop decorator
 - [ ] Support reflecting props to attribute (but only if they were defined by user as attr? or always? maybe option like: reflect: true || reflect: "always")
-- [ ] support Boolean props (`@prop(type: Boolean)`) - when set as "attr: true", then removeAttribute/setAttribute.
+- [x] support Boolean props (`@prop(type: Boolean)`) - when set as "attr: true", then removeAttribute/setAttribute.
 - [x] Support html attributes defined as ka-bab syntax
 - [x] create two new instance methods: `$()` = select single element, and: `$$()` select multiples
 - [x] expose instance `$ui` -- Pointer to either shadowRoot or element
@@ -155,7 +155,7 @@ ____
 - [ ] Integrate ShadyCSS if detected in Global and env. does not support Scoped CSS
 - [x] Remove dependency on ObservableData. Probably under-utilized for base class functionality.
 - [x] Add onPropChange(callback) method
-- [ ] Create new `@bind` decorator - adds method to the prototype as a lazy getter, which on first call, will bind the method to the instance.
+- [x] Create new `@bind` decorator - adds method to the prototype as a lazy getter, which on first call, will bind the method to the instance.
 
 
 

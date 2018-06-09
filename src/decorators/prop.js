@@ -8,9 +8,11 @@ const NOOP = val => val;
 
 /**
  * Create a ComponentElement property.
- * The property has the following characteristics:
  *
- *  -   Values, when set, are automatically copied to the Instance state.props
+ * @param {Object} [options]
+ * @param {Object} [Proto]
+ * @param {String} [prop]
+ * @param {Object} [descriptor]
  *
  * @returns {Function}
  */
@@ -24,10 +26,38 @@ export function prop(...args) {
 
 
 function setupProp(options, Proto, prop, descriptor) {
-    const getter = descriptor.get;
-    const setter = descriptor.set;
-    const propDef = objectExtend(getPropDef(Proto, prop, getter, setter), options);
+    let getter = descriptor.get;
+    let setter = descriptor.set;
 
+    // If prop is defined as `boolean` then ensure that the value stored is
+    // always a boolean based upon whether the prop is on the element or not
+    // In this case, defined getter/setter is ignored/discarded
+    // TODO: is there a use case where calling the real getter/setter is valid?
+    if (options && options.boolean) {
+        options.attr = true;
+
+        getter = descriptor.get = function () {
+            return this.hasAttribute(prop);
+        };
+
+        setter = descriptor.set = function (value) {
+            // When setting the value of this attribute directly on the instance (or instance.props),
+            // ensure that element attribute is also adjusted to reflect value.
+            // Do this only if the `value` is boolean - because when an attribute is added to the
+            // element, its value should be empty string.
+            if ("boolean" === typeof value) {
+                if (value && !this.hasAttribute(prop)) {
+                    this.setAttribute(prop, "");
+                }
+                else if (!value && this.hasAttribute(prop)) {
+                    this.removeAttribute(prop);
+                }
+            }
+            return this.hasAttribute(prop);
+        };
+    }
+
+    const propDef = objectExtend(getPropDef(Proto, prop, getter, setter), options);
     descriptor.get = descriptor.set = lazyProp(prop, getter, setter);
 
     // Create a instance property for each alias as well
@@ -54,14 +84,38 @@ function getClassProps(Proto) {
     return Proto.constructor.propsDef;
 }
 
+/**
+ * Returns the PropDefinition
+ *
+ * @private
+ *
+ * @param Proto
+ * @param name
+ * @param getter
+ * @param setter
+ * @returns ComponentElement~PropDefinition
+ */
 function getPropDef(Proto, name, getter, setter) {
     const classProps = getClassProps(Proto);
 
     if (!classProps[name]) {
+        /**
+         * A Class prop definition
+         *
+         * @typedef {Object} ComponentElement~PropDefinition
+         * @property {String} name              Then name of the prop
+         * @property {Boolean} attr             Can the prop be set via an HTML attribute
+         * @property {Boolean} required         Is the prop required
+         * @property {Boolean} boolean          Is the prop value mean to be a boolean (note: also forces `attr` to true)
+         * @property {Function} default         Function that returns default value (the `getter` when decorator is used)
+         * @property {Function} filter          Function that filters the value being set (the `setter` when decorator is used)
+         * @property {Array<String>} aliases    An array of aliases for the prop
+         */
         classProps[name] = {
             name,
             attr: false,
             required: false,
+            boolean: false,
             default: getter || NOOP,
             filter: setter || NOOP,
             aliases: [
@@ -69,6 +123,9 @@ function getPropDef(Proto, name, getter, setter) {
             ]
             // _isAlias: --- used in getPropsDefinition()
         };
+
+        // If the prop name has upper case letters, then its possible that it is
+        // defined as camelCase - create ka-bab alias.
         if (RE_UPPER_CASE_LETTERS.test(name)) {
             classProps[name].aliases.push(getKebabCase(name));
         }

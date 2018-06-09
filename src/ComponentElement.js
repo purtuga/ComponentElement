@@ -39,7 +39,7 @@ export class ComponentElement extends HTMLElement {
     /**
      * The Component's props definition
      * @name propsDef
-     * @type {Object<String,Object>}
+     * @type {Object<String,ComponentElement~PropDefinition>}
      */
 
     /**
@@ -183,7 +183,7 @@ export class ComponentElement extends HTMLElement {
 
         objectKeys(propDefinitions).forEach(propName => {
             if (!propDefinitions[propName] || !propDefinitions[propName]._isAlias) {
-                let propValue = propDefinitions[propName].default();
+                let propValue = propDefinitions[propName].default.call(this);
 
                 objectDefineProperty(props, propName, {
                     configurable: true,
@@ -196,8 +196,6 @@ export class ComponentElement extends HTMLElement {
                         return propValue = newValue;
                     }
                 });
-
-                // props[propName] = propDefinitions[propName].default();
             }
         });
 
