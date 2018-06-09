@@ -7,7 +7,9 @@ import {
     PRIVATE,
     getPropsDefinition,
     getComponentInstanceTemplate,
-    getComponentClassState
+    getComponentClassState,
+    elementHasAttributeForProp,
+    geAttributeValueForProp
 } from "./utils"
 import {
     prepareComponentTemplate,
@@ -187,6 +189,14 @@ export class ComponentElement extends HTMLElement {
         objectKeys(propDefinitions).forEach(propName => {
             if (!propDefinitions[propName] || !propDefinitions[propName]._isAlias) {
                 let propValue = propDefinitions[propName].default.call(this);
+
+                if (
+                    propDefinitions[propName].attr &&
+                    !propDefinitions[propName].boolean &&
+                    elementHasAttributeForProp(this, propDefinitions[propName])
+                ) {
+                    propValue = geAttributeValueForProp(this, propDefinitions[propName]);
+                }
 
                 objectDefineProperty(props, propName, {
                     configurable: true,

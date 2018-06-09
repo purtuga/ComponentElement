@@ -18,6 +18,16 @@ export function elementHasAttributeForProp(ele, propDef) {
     return propDef.aliases.some(propAlias => ele.hasAttribute(propAlias));
 }
 
+export function geAttributeValueForProp(ele, propDef) {
+    let attrVal = "";
+    propDef.aliases.some(propAlias => {
+        if (ele.hasAttribute(propAlias)) {
+            attrVal = ele.getAttribute(propAlias);
+            return true;
+        }
+    });
+    return attrVal;
+}
 
 export function getState(instance) {
     if (!PRIVATE.has(instance)) {
@@ -81,7 +91,11 @@ export function getCamelCase(str) {
     return str.replace(/(-[a-z])/g, (match, p1) => p1.toUpperCase().substr(1))
 }
 
-
+/**
+ *
+ * @param ComponentClass
+ * @returns {Object<String,ComponentElement~PropDefinition>}
+ */
 export function getPropsDefinition(ComponentClass) {
     let state = getComponentClassState(ComponentClass);
 

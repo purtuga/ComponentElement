@@ -107,7 +107,7 @@
         /******/
         // Load entry module and return exports
         /******/
-        return __webpack_require__(__webpack_require__.s = 5);
+        return __webpack_require__(__webpack_require__.s = 6);
     }([ /* 0 */
     /***/
     function(module, __webpack_exports__, __webpack_require__) {
@@ -166,63 +166,29 @@
     /***/
     function(module, __webpack_exports__, __webpack_require__) {
         "use strict";
-        /* unused harmony export objectExtend */
-        var OBJECT_TYPE = "[object Object]";
-        var _toString = Function.call.bind(Object.prototype.toString);
-        //============================================================
-        /**
- * Extends an object with the properties of another.
- *
- * @param {Object|Boolean} mergeIntoObj
- *  The object that will have the properties of every other object provided
- *  on input merged into. This can also be a `Boolean`, in which case,
- *  a deep merge of objects will be done - argument number 2 will
- *  become the `mergeIntoObj`.
- * @param {...Object} mergeObjects
- *
- * @return {Object}
- */
-        function objectExtend(mergeIntoObj) {
-            var response = mergeIntoObj || {};
-            for (var _len = arguments.length, mergeObjects = Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) mergeObjects[_key - 1] = arguments[_key];
-            var total = mergeObjects.length;
-            var deepMerge = false;
-            var i = void 0;
-            var key = void 0;
-            if ("boolean" === typeof mergeIntoObj) {
-                deepMerge = mergeIntoObj;
-                response = mergeObjects.shift() || {};
-                total = mergeObjects.length;
-            }
-            for (i = 0; i < total; i++) {
-                if (!mergeObjects[i]) continue;
-                for (key in mergeObjects[i]) mergeObjects[i].hasOwnProperty(key) && (deepMerge && _toString(response[key]) === OBJECT_TYPE && _toString(mergeObjects[i][key]) === OBJECT_TYPE ? response[key] = objectExtend(true, response[key], mergeObjects[i][key]) : response[key] = mergeObjects[i][key]);
-            }
-            return response;
-        }
-        /* harmony default export */
-        __webpack_exports__.a = objectExtend;
-    }, /* 2 */
-    /***/
-    function(module, __webpack_exports__, __webpack_require__) {
-        "use strict";
         /* harmony export (binding) */
         __webpack_require__.d(__webpack_exports__, "a", function() {
             return PRIVATE;
         });
         /* harmony export (immutable) */
-        __webpack_exports__.f = getState;
+        __webpack_exports__.b = elementHasAttributeForProp;
         /* harmony export (immutable) */
-        __webpack_exports__.d = getKebabCase;
+        __webpack_exports__.c = geAttributeValueForProp;
+        /* harmony export (immutable) */
+        __webpack_exports__.i = getState;
+        /* harmony export (immutable) */
+        __webpack_exports__.g = getKebabCase;
         /* unused harmony export getCamelCase */
         /* harmony export (immutable) */
-        __webpack_exports__.e = getPropsDefinition;
+        __webpack_exports__.h = getPropsDefinition;
         /* harmony export (immutable) */
-        __webpack_exports__.b = getComponentClassState;
+        __webpack_exports__.d = getComponentClassState;
         /* harmony export (immutable) */
-        __webpack_exports__.c = getComponentTemplate;
+        __webpack_exports__.e = getComponentInstanceTemplate;
+        /* harmony export (immutable) */
+        __webpack_exports__.f = getComponentTemplate;
         /* harmony import */
-        var __WEBPACK_IMPORTED_MODULE_0_common_micro_libs_src_jsutils_objectExtend__ = __webpack_require__(1);
+        var __WEBPACK_IMPORTED_MODULE_0_common_micro_libs_src_jsutils_objectExtend__ = __webpack_require__(2);
         /* harmony import */
         var __WEBPACK_IMPORTED_MODULE_1_common_micro_libs_src_jsutils_dataStore__ = __webpack_require__(12);
         /* harmony import */
@@ -231,6 +197,29 @@
         var __WEBPACK_IMPORTED_MODULE_3_common_micro_libs_src_jsutils_runtime_aliases__ = __webpack_require__(0);
         //============================================================================
         var PRIVATE = __WEBPACK_IMPORTED_MODULE_1_common_micro_libs_src_jsutils_dataStore__.a.create();
+        /**
+ * Checks if the element has an attribute set that matches any of the aliases for a prop
+ *
+ * @param {ComponentElement} ele
+ * @param {ComponentElement~PropDefinition} propDef
+ *
+ * @return {Boolean}
+ */
+        function elementHasAttributeForProp(ele, propDef) {
+            return propDef.aliases.some(function(propAlias) {
+                return ele.hasAttribute(propAlias);
+            });
+        }
+        function geAttributeValueForProp(ele, propDef) {
+            var attrVal = "";
+            propDef.aliases.some(function(propAlias) {
+                if (ele.hasAttribute(propAlias)) {
+                    attrVal = ele.getAttribute(propAlias);
+                    return true;
+                }
+            });
+            return attrVal;
+        }
         function getState(instance) {
             if (!PRIVATE.has(instance)) {
                 var state = {
@@ -279,6 +268,11 @@
                 return "-" + p1.toLowerCase();
             });
         }
+        /**
+ *
+ * @param ComponentClass
+ * @returns {Object<String,ComponentElement~PropDefinition>}
+ */
         function getPropsDefinition(ComponentClass) {
             var state = getComponentClassState(ComponentClass);
             if (!state.propsDef) {
@@ -323,17 +317,68 @@
  *
  * @return {HTMLElement}
  */
-        function getComponentTemplate(componentInstance) {
-            if ("string" === typeof componentInstance.constructor.template) {
-                var classState = getComponentClassState(componentInstance.constructor);
-                if (!classState.template) {
-                    classState.template = componentInstance.ownerDocument.createElement("template");
-                    classState.template.innerHTML = componentInstance.constructor.template;
-                }
-                return componentInstance.ownerDocument.importNode(classState.template.content, true);
-            }
-            return componentInstance.ownerDocument.importNode(componentInstance.constructor.template.content, true);
+        function getComponentInstanceTemplate(componentInstance) {
+            return componentInstance.ownerDocument.importNode(getComponentTemplate(componentInstance.constructor).content, true);
         }
+        /**
+ * Returns a `HTMLTemplateElement` that holds the ComponentElement's template
+ *
+ * @param {ComponentElement} Component
+ *  The ComponentElement class
+ *
+ * @return {HTMLTemplateElement}
+ */
+        function getComponentTemplate(Component) {
+            if ("string" === typeof Component.template) {
+                var classState = getComponentClassState(Component);
+                if (!classState.template) {
+                    classState.template = document.createElement("template");
+                    classState.template.innerHTML = Component.template;
+                }
+                return classState.template;
+            }
+            return Component.template;
+        }
+    }, /* 2 */
+    /***/
+    function(module, __webpack_exports__, __webpack_require__) {
+        "use strict";
+        /* unused harmony export objectExtend */
+        var OBJECT_TYPE = "[object Object]";
+        var _toString = Function.call.bind(Object.prototype.toString);
+        //============================================================
+        /**
+ * Extends an object with the properties of another.
+ *
+ * @param {Object|Boolean} mergeIntoObj
+ *  The object that will have the properties of every other object provided
+ *  on input merged into. This can also be a `Boolean`, in which case,
+ *  a deep merge of objects will be done - argument number 2 will
+ *  become the `mergeIntoObj`.
+ * @param {...Object} mergeObjects
+ *
+ * @return {Object}
+ */
+        function objectExtend(mergeIntoObj) {
+            var response = mergeIntoObj || {};
+            for (var _len = arguments.length, mergeObjects = Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) mergeObjects[_key - 1] = arguments[_key];
+            var total = mergeObjects.length;
+            var deepMerge = false;
+            var i = void 0;
+            var key = void 0;
+            if ("boolean" === typeof mergeIntoObj) {
+                deepMerge = mergeIntoObj;
+                response = mergeObjects.shift() || {};
+                total = mergeObjects.length;
+            }
+            for (i = 0; i < total; i++) {
+                if (!mergeObjects[i]) continue;
+                for (key in mergeObjects[i]) mergeObjects[i].hasOwnProperty(key) && (deepMerge && _toString(response[key]) === OBJECT_TYPE && _toString(mergeObjects[i][key]) === OBJECT_TYPE ? response[key] = objectExtend(true, response[key], mergeObjects[i][key]) : response[key] = mergeObjects[i][key]);
+            }
+            return response;
+        }
+        /* harmony default export */
+        __webpack_exports__.a = objectExtend;
     }, /* 3 */
     /***/
     function(module, __webpack_exports__, __webpack_require__) {
@@ -343,7 +388,7 @@
             return ComponentElement;
         });
         /* harmony import */
-        var __WEBPACK_IMPORTED_MODULE_0_common_micro_libs_src_jsutils_objectExtend__ = __webpack_require__(1);
+        var __WEBPACK_IMPORTED_MODULE_0_common_micro_libs_src_jsutils_objectExtend__ = __webpack_require__(2);
         /* harmony import */
         var __WEBPACK_IMPORTED_MODULE_1_common_micro_libs_src_jsutils_runtime_aliases__ = __webpack_require__(0);
         /* harmony import */
@@ -351,7 +396,9 @@
         /* harmony import */
         var __WEBPACK_IMPORTED_MODULE_3_common_micro_libs_src_domutils_domAddEventListener__ = __webpack_require__(11);
         /* harmony import */
-        var __WEBPACK_IMPORTED_MODULE_4__utils__ = __webpack_require__(2);
+        var __WEBPACK_IMPORTED_MODULE_4__utils__ = __webpack_require__(1);
+        /* harmony import */
+        var __WEBPACK_IMPORTED_MODULE_5__polyfill_support__ = __webpack_require__(13);
         var _typeof = "function" === typeof Symbol && "symbol" === typeof Symbol.iterator ? function(obj) {
             return typeof obj;
         } : function(obj) {
@@ -422,6 +469,7 @@
  * A generic class for building widgets based on HTML Custom Elements.
  *
  * @extends HTMLElement
+ *
  */
         var ComponentElement = _fixBabelExtend(function(_HTMLElement) {
             _inherits(ComponentElement, _HTMLElement);
@@ -441,7 +489,7 @@
             /**
      * The Component's props definition
      * @name propsDef
-     * @type {Object<String,Object>}
+     * @type {Object<String,ComponentElement~PropDefinition>}
      */
             /**
      * Return default registration tag name
@@ -455,7 +503,7 @@
                 //==============================================================
                 // Reflects changed html attributes to state.props
                 value: function(name, oldValue, newValue) {
-                    var propsDef = Object(__WEBPACK_IMPORTED_MODULE_4__utils__.e)(this.constructor);
+                    var propsDef = Object(__WEBPACK_IMPORTED_MODULE_4__utils__.h)(this.constructor);
                     propsDef[name] && (name = propsDef[name].name);
                     this.props[name] = newValue;
                 }
@@ -463,7 +511,7 @@
                 key: "destroy",
                 value: function() {
                     if (__WEBPACK_IMPORTED_MODULE_4__utils__.a.has(this)) {
-                        var state = Object(__WEBPACK_IMPORTED_MODULE_4__utils__.f)(this);
+                        var state = Object(__WEBPACK_IMPORTED_MODULE_4__utils__.i)(this);
                         __WEBPACK_IMPORTED_MODULE_4__utils__.a.delete(this);
                         if (state.destroyQueued) {
                             clearTimeout(state.destroyQueued);
@@ -473,11 +521,12 @@
                             return cb();
                         });
                     }
+                    this.parentNode && this.parentNode.removeChild(this);
                 }
             }, {
                 key: "onDestroy",
                 value: function(callback) {
-                    Object(__WEBPACK_IMPORTED_MODULE_4__utils__.f)(this).destroyCallbacks.push(callback);
+                    Object(__WEBPACK_IMPORTED_MODULE_4__utils__.i)(this).destroyCallbacks.push(callback);
                 }
             }, {
                 key: "$",
@@ -533,9 +582,10 @@
             }, {
                 key: "connectedCallback",
                 value: function() {
+                    Object(__WEBPACK_IMPORTED_MODULE_5__polyfill_support__.b)(this);
                     // Cancel destroy if it is queued
                     if (__WEBPACK_IMPORTED_MODULE_4__utils__.a.has(this)) {
-                        var state = Object(__WEBPACK_IMPORTED_MODULE_4__utils__.f)(this);
+                        var state = Object(__WEBPACK_IMPORTED_MODULE_4__utils__.i)(this);
                         if (state.destroyQueued) {
                             clearTimeout(state.destroyQueued);
                             state.destroyQueued = null;
@@ -543,7 +593,7 @@
                         state.isMounted = true;
                         state.ready && this.mounted();
                     } else {
-                        Object(__WEBPACK_IMPORTED_MODULE_4__utils__.f)(this).isMounted = true;
+                        Object(__WEBPACK_IMPORTED_MODULE_4__utils__.i)(this).isMounted = true;
                         setupComponent(this);
                     }
                 }
@@ -554,7 +604,7 @@
                     // This seems to be currently the only way to ensure attached `onDestroy` logic run when
                     // the element is no longer needed.
                     if (__WEBPACK_IMPORTED_MODULE_4__utils__.a.has(this)) {
-                        var state = Object(__WEBPACK_IMPORTED_MODULE_4__utils__.f)(this);
+                        var state = Object(__WEBPACK_IMPORTED_MODULE_4__utils__.i)(this);
                         state.destroyQueued || (state.destroyQueued = setTimeout(this.destroy.bind(this), this.constructor.delayDestroy));
                         state.isMounted = false;
                         state.ready && this.unmounted();
@@ -567,11 +617,12 @@
                     if (this.constructor.prototype === this) throw new Error("can't be used on own prototype");
                     if (this._$props) return this._$props;
                     // On first call - setup the property on the instance
-                    var propDefinitions = Object(__WEBPACK_IMPORTED_MODULE_4__utils__.e)(this.constructor);
+                    var propDefinitions = Object(__WEBPACK_IMPORTED_MODULE_4__utils__.h)(this.constructor);
                     var props = {};
                     Object(__WEBPACK_IMPORTED_MODULE_1_common_micro_libs_src_jsutils_runtime_aliases__.f)(propDefinitions).forEach(function(propName) {
                         if (!propDefinitions[propName] || !propDefinitions[propName]._isAlias) {
-                            var propValue = propDefinitions[propName].default();
+                            var propValue = propDefinitions[propName].default.call(_this2);
+                            propDefinitions[propName].attr && !propDefinitions[propName].boolean && Object(__WEBPACK_IMPORTED_MODULE_4__utils__.b)(_this2, propDefinitions[propName]) && (propValue = Object(__WEBPACK_IMPORTED_MODULE_4__utils__.c)(_this2, propDefinitions[propName]));
                             Object(__WEBPACK_IMPORTED_MODULE_1_common_micro_libs_src_jsutils_runtime_aliases__.e)(props, propName, {
                                 configurable: true,
                                 enumerable: true,
@@ -601,7 +652,31 @@
          * Registers the web component. Uses tagName as default input param
          */
                 value: function(name) {
+                    Object(__WEBPACK_IMPORTED_MODULE_5__polyfill_support__.a)(this, name || this.tagName);
                     window.customElements.define(name || this.tagName, this);
+                }
+            }, {
+                key: "renderTemplate",
+                /**
+         * Renderer for the template and return what should be inserted into shadowDom.
+         * By default, this base class will simply clone the `template` defined in the
+         * static property above. This method will called prior to doing that, and if
+         * it returns a `truthy` value, then its assume to be either an HTMLElement or
+         * DocumentFragment with the element's instance UI (which will be inserted into
+         * shadowDom).
+         *
+         * **NOTE**: Should always use `getComponentInstanceTemplate` or `getComponentTemplate`
+         * to retrieve the template or its content, since it is manipulated in browsers that
+         * use the polyfills to make the template compatible in those platforms.
+         *
+         * @param {ComponentElement} eleInstance
+         *  The `ComponentElement` instance being initialized
+         *
+         * @return {HTMLElement|DocumentFragment}
+         */
+                value: function(eleInstance) {
+                    // FIXME: should two additional params be provided - one to get templateInstance and another to get templateElement?
+                    return Object(__WEBPACK_IMPORTED_MODULE_4__utils__.e)(eleInstance);
                 }
             }, {
                 key: "tagName",
@@ -611,7 +686,7 @@
             }, {
                 key: "delayDestroy",
                 get: function() {
-                    return 5e3;
+                    return 250;
                 }
             }, {
                 key: "useShadow",
@@ -636,9 +711,9 @@
             }, {
                 key: "observedAttributes",
                 get: function() {
-                    var state = Object(__WEBPACK_IMPORTED_MODULE_4__utils__.b)(this);
+                    var state = Object(__WEBPACK_IMPORTED_MODULE_4__utils__.d)(this);
                     if (!state.observedAttrs) {
-                        var propList = Object(__WEBPACK_IMPORTED_MODULE_4__utils__.e)(this);
+                        var propList = Object(__WEBPACK_IMPORTED_MODULE_4__utils__.h)(this);
                         state.observedAttrs = Object(__WEBPACK_IMPORTED_MODULE_1_common_micro_libs_src_jsutils_runtime_aliases__.f)(propList).filter(function(p) {
                             return propList[p].attr;
                         });
@@ -649,7 +724,7 @@
             return ComponentElement;
         }(HTMLElement));
         function setupComponent(component) {
-            var state = Object(__WEBPACK_IMPORTED_MODULE_4__utils__.f)(component);
+            var state = Object(__WEBPACK_IMPORTED_MODULE_4__utils__.i)(component);
             var lastReadyState = null;
             var handleReadyChanges = function() {
                 if (lastReadyState === state.ready) return;
@@ -657,7 +732,7 @@
                 if (state.ready) {
                     if (!state.hasTemplate) {
                         // component._$ui.innerHTML = component.constructor.template;
-                        component._$ui.appendChild(Object(__WEBPACK_IMPORTED_MODULE_4__utils__.c)(component));
+                        component._$ui.appendChild(component.constructor.renderTemplate(component));
                         state.hasTemplate = true;
                     }
                     component.ready();
@@ -690,7 +765,7 @@
         /* harmony import */
         var __WEBPACK_IMPORTED_MODULE_0_common_micro_libs_src_jsutils_runtime_aliases__ = __webpack_require__(0);
         /* harmony import */
-        var __WEBPACK_IMPORTED_MODULE_1_common_micro_libs_src_jsutils_Set__ = __webpack_require__(6);
+        var __WEBPACK_IMPORTED_MODULE_1_common_micro_libs_src_jsutils_Set__ = __webpack_require__(7);
         /* harmony import */
         var __WEBPACK_IMPORTED_MODULE_2_common_micro_libs_src_jsutils_nextTick__ = __webpack_require__(10);
         function _toConsumableArray(arr) {
@@ -1038,6 +1113,29 @@
     /***/
     function(module, __webpack_exports__, __webpack_require__) {
         "use strict";
+        /* WEBPACK VAR INJECTION */
+        (function(global) {
+            /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() {
+                return GLOBAL;
+            });
+            /* unused harmony export getGlobal */
+            var _typeof = "function" === typeof Symbol && "symbol" === typeof Symbol.iterator ? function(obj) {
+                return typeof obj;
+            } : function(obj) {
+                return obj && "function" === typeof Symbol && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj;
+            };
+            var GLOBAL = function() {
+                /* global self, window, global */
+                if ("undefined" !== ("undefined" === typeof window ? "undefined" : _typeof(window))) return window;
+                if ("undefined" !== ("undefined" === typeof global ? "undefined" : _typeof(global))) return global;
+                if ("undefined" !== ("undefined" === typeof self ? "undefined" : _typeof(self))) return self;
+                return Function("return this;")();
+            }();
+        }).call(__webpack_exports__, __webpack_require__(8));
+    }, /* 6 */
+    /***/
+    function(module, __webpack_exports__, __webpack_require__) {
+        "use strict";
         Object.defineProperty(__webpack_exports__, "__esModule", {
             value: true
         });
@@ -1048,29 +1146,43 @@
             return __WEBPACK_IMPORTED_MODULE_0__ComponentElement__.a;
         });
         /* harmony import */
-        var __WEBPACK_IMPORTED_MODULE_1__decorators__ = __webpack_require__(13);
+        var __WEBPACK_IMPORTED_MODULE_1__decorators_prop__ = __webpack_require__(14);
         /* harmony namespace reexport (by provided) */
         __webpack_require__.d(__webpack_exports__, "prop", function() {
-            return __WEBPACK_IMPORTED_MODULE_1__decorators__.a;
+            return __WEBPACK_IMPORTED_MODULE_1__decorators_prop__.a;
         });
         /* harmony import */
-        var __WEBPACK_IMPORTED_MODULE_2__utils__ = __webpack_require__(2);
+        var __WEBPACK_IMPORTED_MODULE_2__decorators_bind__ = __webpack_require__(15);
+        /* harmony namespace reexport (by provided) */
+        __webpack_require__.d(__webpack_exports__, "bind", function() {
+            return __WEBPACK_IMPORTED_MODULE_2__decorators_bind__.a;
+        });
+        /* harmony import */
+        var __WEBPACK_IMPORTED_MODULE_3__utils__ = __webpack_require__(1);
         /* harmony reexport (binding) */
         __webpack_require__.d(__webpack_exports__, "getState", function() {
-            return __WEBPACK_IMPORTED_MODULE_2__utils__.f;
+            return __WEBPACK_IMPORTED_MODULE_3__utils__.i;
+        });
+        /* harmony reexport (binding) */
+        __webpack_require__.d(__webpack_exports__, "getComponentTemplate", function() {
+            return __WEBPACK_IMPORTED_MODULE_3__utils__.f;
+        });
+        /* harmony reexport (binding) */
+        __webpack_require__.d(__webpack_exports__, "getComponentInstanceTemplate", function() {
+            return __WEBPACK_IMPORTED_MODULE_3__utils__.e;
         });
         /* harmony reexport (binding) */
         __webpack_require__.d(__webpack_exports__, "default", function() {
             return __WEBPACK_IMPORTED_MODULE_0__ComponentElement__.a;
         });
-    }, /* 6 */
+    }, /* 7 */
     /***/
     function(module, __webpack_exports__, __webpack_require__) {
         "use strict";
         /* unused harmony export Set */
         /* unused harmony export FakeSet */
         /* harmony import */
-        var __WEBPACK_IMPORTED_MODULE_0__getGlobal__ = __webpack_require__(7);
+        var __WEBPACK_IMPORTED_MODULE_0__getGlobal__ = __webpack_require__(5);
         /* harmony import */
         var __WEBPACK_IMPORTED_MODULE_1__Iterator__ = __webpack_require__(9);
         /* harmony import */
@@ -1156,29 +1268,6 @@
                 return this.values();
             }
         }));
-    }, /* 7 */
-    /***/
-    function(module, __webpack_exports__, __webpack_require__) {
-        "use strict";
-        /* WEBPACK VAR INJECTION */
-        (function(global) {
-            /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() {
-                return GLOBAL;
-            });
-            /* unused harmony export getGlobal */
-            var _typeof = "function" === typeof Symbol && "symbol" === typeof Symbol.iterator ? function(obj) {
-                return typeof obj;
-            } : function(obj) {
-                return obj && "function" === typeof Symbol && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj;
-            };
-            var GLOBAL = function() {
-                /* global self, window, global */
-                if ("undefined" !== ("undefined" === typeof window ? "undefined" : _typeof(window))) return window;
-                if ("undefined" !== ("undefined" === typeof global ? "undefined" : _typeof(global))) return global;
-                if ("undefined" !== ("undefined" === typeof self ? "undefined" : _typeof(self))) return self;
-                return Function("return this;")();
-            }();
-        }).call(__webpack_exports__, __webpack_require__(8));
     }, /* 8 */
     /***/
     function(module, exports) {
@@ -1430,13 +1519,55 @@
     function(module, __webpack_exports__, __webpack_require__) {
         "use strict";
         /* harmony export (immutable) */
+        __webpack_exports__.a = prepareComponentTemplate;
+        /* harmony export (immutable) */
+        __webpack_exports__.b = styleComponentInstanceElement;
+        /* unused harmony export reStyleComponentInstanceSubtree */
+        /* harmony import */
+        var __WEBPACK_IMPORTED_MODULE_0_common_micro_libs_src_jsutils_getGlobal__ = __webpack_require__(5);
+        /* harmony import */
+        var __WEBPACK_IMPORTED_MODULE_1__utils__ = __webpack_require__(1);
+        //--------------------------------------------------------------
+        // Utilities to work with polyfills like ShadyCSS
+        //--------------------------------------------------------------
+        //===========================================================================================
+        var supportsShadyCSS = function() {
+            return !!__WEBPACK_IMPORTED_MODULE_0_common_micro_libs_src_jsutils_getGlobal__.a.ShadyCSS;
+        };
+        // FIXME: code below should check also for native support for CEs (protect against polyfills loaded in a native env?)
+        /**
+ * Prepares the component's styles for the given `define` tag name.
+ * Method should be called at the time the Element is registered into CustomElementsRegistry
+ *
+ * @param {ComponentElement} Component
+ * @param {String} tagName
+ */
+        function prepareComponentTemplate(Component, tagName) {
+            // FIXME: need additional checks here. ONly use shady if ShadowDom is not supported natively.
+            //              need to use: ShadyCSS.nativeShadow to check if shadowroot is supported
+            //              Also: should we check the Component's "useShadow" property?
+            supportsShadyCSS() && __WEBPACK_IMPORTED_MODULE_0_common_micro_libs_src_jsutils_getGlobal__.a.ShadyCSS.prepareTemplate(Object(__WEBPACK_IMPORTED_MODULE_1__utils__.f)(Component), tagName);
+        }
+        /**
+ * Styles the instance of a custom element using ShadyCSS
+ *
+ * @param {HTMLElement} componentInstance
+ */
+        function styleComponentInstanceElement(componentInstance) {
+            supportsShadyCSS() && __WEBPACK_IMPORTED_MODULE_0_common_micro_libs_src_jsutils_getGlobal__.a.ShadyCSS.styleElement(componentInstance);
+        }
+    }, /* 14 */
+    /***/
+    function(module, __webpack_exports__, __webpack_require__) {
+        "use strict";
+        /* harmony export (immutable) */
         __webpack_exports__.a = prop;
         /* harmony import */
-        var __WEBPACK_IMPORTED_MODULE_0_common_micro_libs_src_jsutils_objectExtend__ = __webpack_require__(1);
+        var __WEBPACK_IMPORTED_MODULE_0_common_micro_libs_src_jsutils_objectExtend__ = __webpack_require__(2);
         /* harmony import */
         var __WEBPACK_IMPORTED_MODULE_1_common_micro_libs_src_jsutils_runtime_aliases__ = __webpack_require__(0);
         /* harmony import */
-        var __WEBPACK_IMPORTED_MODULE_2__utils__ = __webpack_require__(2);
+        var __WEBPACK_IMPORTED_MODULE_2__utils__ = __webpack_require__(1);
         //===============================================================================
         var RE_UPPER_CASE_LETTERS = /[A-Z]/;
         var NOOP = function(val) {
@@ -1444,9 +1575,11 @@
         };
         /**
  * Create a ComponentElement property.
- * The property has the following characteristics:
  *
- *  -   Values, when set, are automatically copied to the Instance state.props
+ * @param {Object} [options]
+ * @param {Object} [Proto]
+ * @param {String} [prop]
+ * @param {Object} [descriptor]
  *
  * @returns {Function}
  */
@@ -1459,7 +1592,26 @@
         function setupProp(options, Proto, prop, descriptor) {
             var getter = descriptor.get;
             var setter = descriptor.set;
-            var propDef = Object(__WEBPACK_IMPORTED_MODULE_0_common_micro_libs_src_jsutils_objectExtend__.a)(getPropDef(Proto, prop, getter, setter), options);
+            var propDef = void 0;
+            // If prop is defined as `boolean` then ensure that the value stored is
+            // always a boolean based upon whether the prop is on the element or not
+            // In this case, defined getter/setter is ignored/discarded
+            // TODO: is there a use case where calling the real getter/setter is valid?
+            if (options && options.boolean) {
+                options.attr = true;
+                getter = descriptor.get = function() {
+                    return Object(__WEBPACK_IMPORTED_MODULE_2__utils__.b)(this, propDef);
+                };
+                setter = descriptor.set = function(value) {
+                    // When setting the value of this attribute directly on the instance (or instance.props),
+                    // ensure that element attribute is also adjusted to reflect value.
+                    // Do this only if the `value` is boolean - because when an attribute is added to the
+                    // element, its value should be empty string.
+                    "boolean" === typeof value && (value && !Object(__WEBPACK_IMPORTED_MODULE_2__utils__.b)(this, propDef) ? this.setAttribute(prop, "") : !value && Object(__WEBPACK_IMPORTED_MODULE_2__utils__.b)(this, propDef) && this.removeAttribute(prop));
+                    return Object(__WEBPACK_IMPORTED_MODULE_2__utils__.b)(this, propDef);
+                };
+            }
+            propDef = Object(__WEBPACK_IMPORTED_MODULE_0_common_micro_libs_src_jsutils_objectExtend__.a)(getPropDef(Proto, prop, getter, setter), options);
             descriptor.get = descriptor.set = lazyProp(prop, getter, setter);
             // Create a instance property for each alias as well
             propDef.aliases.length && propDef.aliases.forEach(function(propAliasName) {
@@ -1482,18 +1634,44 @@
             });
             return Proto.constructor.propsDef;
         }
+        /**
+ * Returns the PropDefinition
+ *
+ * @private
+ *
+ * @param Proto
+ * @param name
+ * @param getter
+ * @param setter
+ * @returns ComponentElement~PropDefinition
+ */
         function getPropDef(Proto, name, getter, setter) {
             var classProps = getClassProps(Proto);
             if (!classProps[name]) {
+                /**
+         * A Class prop definition
+         *
+         * @typedef {Object} ComponentElement~PropDefinition
+         * @property {String} name              Then name of the prop
+         * @property {Boolean} attr             Can the prop be set via an HTML attribute
+         * @property {Boolean} required         Is the prop required
+         * @property {Boolean} boolean          Is the prop value mean to be a boolean (note: also forces `attr` to true)
+         * @property {Function} default         Function that returns default value (the `getter` when decorator is used)
+         * @property {Function} filter          Function that filters the value being set (the `setter` when decorator is used)
+         * @property {Array<String>} aliases    An array of aliases for the prop
+         */
                 classProps[name] = {
                     name: name,
                     attr: false,
                     required: false,
+                    boolean: false,
                     default: getter || NOOP,
                     filter: setter || NOOP,
                     aliases: [ name.toLowerCase() ]
                 };
-                RE_UPPER_CASE_LETTERS.test(name) && classProps[name].aliases.push(Object(__WEBPACK_IMPORTED_MODULE_2__utils__.d)(name));
+                // If the prop name has upper case letters, then its possible that it is
+                // defined as camelCase - create ka-bab alias.
+                RE_UPPER_CASE_LETTERS.test(name) && classProps[name].aliases.push(Object(__WEBPACK_IMPORTED_MODULE_2__utils__.g)(name));
             }
             return classProps[name];
         }
@@ -1511,12 +1689,13 @@
  * @returns {Function}
  */
         function lazyProp(propName, getter, setter) {
+            // FIXME: getter/setter not being used?
             var $propName = "_$" + propName;
             return function() {
                 var isUpdateMode = 1 === arguments.length;
                 if (-1 !== Object.getOwnPropertyNames(this).indexOf($propName)) return isUpdateMode ? this[$propName] = arguments[0] : this[$propName];
                 // Ensure we write back to
-                var writeToPropName = Object(__WEBPACK_IMPORTED_MODULE_2__utils__.e)(this.constructor)[propName].name;
+                var writeToPropName = Object(__WEBPACK_IMPORTED_MODULE_2__utils__.h)(this.constructor)[propName].name;
                 Object(__WEBPACK_IMPORTED_MODULE_1_common_micro_libs_src_jsutils_runtime_aliases__.e)(this, $propName, {
                     configurable: true,
                     get: function() {
@@ -1530,6 +1709,43 @@
                 if (isUpdateMode) return this[$propName] = arguments[0];
                 return this[$propName];
             };
+        }
+    }, /* 15 */
+    /***/
+    function(module, __webpack_exports__, __webpack_require__) {
+        "use strict";
+        /* harmony export (immutable) */
+        __webpack_exports__.a = bind;
+        /* harmony import */
+        var __WEBPACK_IMPORTED_MODULE_0_common_micro_libs_src_jsutils_runtime_aliases__ = __webpack_require__(0);
+        /**
+ * Binds the given attributes to the Class instance on first `get`.
+ *
+ * @return {Function|Object}
+ */
+        function bind(Proto, prop, descriptor) {
+            if (Proto && prop && descriptor && "function" === typeof descriptor.value) {
+                var propFn = descriptor.value;
+                var writable = descriptor.writable;
+                delete descriptor.value;
+                delete descriptor.writable;
+                descriptor.get = function() {
+                    if (this["__settingUp:" + prop]) return;
+                    this["__settingUp:" + prop] = true;
+                    // Fuck you IE!
+                    var fn = propFn.bind(this);
+                    Object(__WEBPACK_IMPORTED_MODULE_0_common_micro_libs_src_jsutils_runtime_aliases__.e)(this, prop, {
+                        configurable: descriptor.configurable,
+                        enumerable: descriptor.enumerable,
+                        writable: writable,
+                        value: fn
+                    });
+                    delete this["__settingUp:" + prop];
+                    return fn;
+                };
+                return descriptor;
+            }
+            return bind;
         }
     } ]);
 });

@@ -30,5 +30,5 @@ export function bind(Proto, prop, descriptor) {
         };
         return descriptor;
     }
-    return bind; // for when its used with no params: `bind()`
+    return bind; // for when called explicitly with no params: `bind()`
 }
