@@ -1,10 +1,13 @@
 import objectExtend from "common-micro-libs/src/jsutils/objectExtend"
 import dataStore from "common-micro-libs/src/jsutils/dataStore"
 import objectWatchProp from "observables/src/objectWatchProp"
-import { isArray, objectKeys, functionBindCall } from "common-micro-libs/src/jsutils/runtime-aliases"
+import { isArray, objectKeys } from "common-micro-libs/src/jsutils/runtime-aliases"
+import {Symbol} from "common-micro-libs/src/jsutils/Symbol"
 
 //============================================================================
 export const PRIVATE = dataStore.create();
+
+export const STATE_SYMBOL = Symbol("state");
 
 /**
  * Checks if the element has an attribute set that matches any of the aliases for a prop
