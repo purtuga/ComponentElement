@@ -320,7 +320,7 @@ export class ComponentElement extends HTMLElement {
      * Set an event listener on the current component
      *
      * @param {String} eventNames
-     *  One or more event names to listen for (space delimetered)
+     *  One or more event names to listen for (space delimiter)
      *
      * @param {Function} callback
      *
@@ -329,7 +329,7 @@ export class ComponentElement extends HTMLElement {
      * @returns {DOMEventListener}
      */
     on(eventNames, callback, capture) {
-        return domAddEventListener(this.$ui, eventNames, callback, capture);
+        return domAddEventListener(this, eventNames, callback, capture);
     }
 
     /**
