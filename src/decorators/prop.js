@@ -148,7 +148,7 @@ function getPropDef(Proto, name, getter, setter) {
  *
  * @returns {Function}
  */
-function lazyProp(propName, getter, setter) { // FIXME: getter/setter not being used?
+function lazyProp(propName/*, getter, setter*/) { // FIXME: getter/setter not being used?
     const $propName = `_$${ propName }`;
 
     return function lazyGetterSetter() {

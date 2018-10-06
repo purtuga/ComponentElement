@@ -19,6 +19,8 @@ import {
 //============================================================================
 const SHADOW_DOM_SUPPORTED = document.head.createShadowRoot || document.head.attachShadow;
 const EV_DEFAULT_INIT = { bubbles: false, cancelable: false, composed: false };
+const CE_REGISTRY = window.customElements;
+const warn = console.warn; // eslint-disable-line
 
 
 /**
@@ -55,8 +57,17 @@ export class ComponentElement extends HTMLElement {
      * Registers the web component. Uses tagName as default input param
      */
     static define(name) {
-        prepareComponentTemplate(this, name || this.tagName);
-        window.customElements.define(name || this.tagName, this);
+        name = name || this.tagName;
+
+        prepareComponentTemplate(this, name);
+
+        if (CE_REGISTRY.get(name)) {
+            if (CE_REGISTRY.get(name) !== this) {
+                warn(`${name} is already a defined in customElementsRegistry as a different Class`);
+            }
+            return;
+        }
+        CE_REGISTRY.define(name, this);
     }
 
     /**
