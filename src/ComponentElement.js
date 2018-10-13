@@ -18,7 +18,7 @@ import {
 
 //============================================================================
 const SHADOW_DOM_SUPPORTED = document.head.createShadowRoot || document.head.attachShadow;
-const EV_DEFAULT_INIT = { bubbles: false, cancelable: false, composed: false };
+const EV_DEFAULT_INIT = { bubbles: true, cancelable: true, composed: true };
 const CE_REGISTRY = window.customElements;
 const warn = console.warn; // eslint-disable-line
 
