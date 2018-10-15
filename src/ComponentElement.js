@@ -203,10 +203,15 @@ export class ComponentElement extends HTMLElement {
 
                 if (
                     propDefinitions[propName].attr &&
-                    !propDefinitions[propName].boolean &&
+                    !propDefinitions[propName].boolean &&   // FIXME: need to determine if Boolean attributes are working
                     elementHasAttributeForProp(this, propDefinitions[propName])
                 ) {
                     propValue = geAttributeValueForProp(this, propDefinitions[propName]);
+                } else if (this.hasOwnProperty(propName)) {
+                    // if the current element has a prop by this same name set directly on the instance,
+                    // then this implies that it was set prior to the Element being upgraded.
+                    propValue = this[propName];
+                    delete this[propName]; // this sets functionality back to the getter/setter.
                 }
 
                 objectDefineProperty(props, propName, {
