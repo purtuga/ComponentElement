@@ -107,7 +107,7 @@
         /******/
         // Load entry module and return exports
         /******/
-        return __webpack_require__(__webpack_require__.s = 6);
+        return __webpack_require__(__webpack_require__.s = 7);
     }([ /* 0 */
     /***/
     function(module, __webpack_exports__, __webpack_require__) {
@@ -170,33 +170,40 @@
         __webpack_require__.d(__webpack_exports__, "a", function() {
             return PRIVATE;
         });
+        /* harmony export (binding) */
+        __webpack_require__.d(__webpack_exports__, "b", function() {
+            return STATE_SYMBOL;
+        });
         /* harmony export (immutable) */
-        __webpack_exports__.b = elementHasAttributeForProp;
+        __webpack_exports__.c = elementHasAttributeForProp;
         /* harmony export (immutable) */
-        __webpack_exports__.c = geAttributeValueForProp;
+        __webpack_exports__.d = geAttributeValueForProp;
         /* harmony export (immutable) */
-        __webpack_exports__.i = getState;
+        __webpack_exports__.j = getState;
         /* harmony export (immutable) */
-        __webpack_exports__.g = getKebabCase;
+        __webpack_exports__.h = getKebabCase;
         /* unused harmony export getCamelCase */
         /* harmony export (immutable) */
-        __webpack_exports__.h = getPropsDefinition;
+        __webpack_exports__.i = getPropsDefinition;
         /* harmony export (immutable) */
-        __webpack_exports__.d = getComponentClassState;
+        __webpack_exports__.e = getComponentClassState;
         /* harmony export (immutable) */
-        __webpack_exports__.e = getComponentInstanceTemplate;
+        __webpack_exports__.f = getComponentInstanceTemplate;
         /* harmony export (immutable) */
-        __webpack_exports__.f = getComponentTemplate;
+        __webpack_exports__.g = getComponentTemplate;
         /* harmony import */
         var __WEBPACK_IMPORTED_MODULE_0_common_micro_libs_src_jsutils_objectExtend__ = __webpack_require__(2);
         /* harmony import */
         var __WEBPACK_IMPORTED_MODULE_1_common_micro_libs_src_jsutils_dataStore__ = __webpack_require__(12);
         /* harmony import */
-        var __WEBPACK_IMPORTED_MODULE_2_observables_src_objectWatchProp__ = __webpack_require__(4);
+        var __WEBPACK_IMPORTED_MODULE_2_observables_src_objectWatchProp__ = __webpack_require__(5);
         /* harmony import */
         var __WEBPACK_IMPORTED_MODULE_3_common_micro_libs_src_jsutils_runtime_aliases__ = __webpack_require__(0);
+        /* harmony import */
+        var __WEBPACK_IMPORTED_MODULE_4_common_micro_libs_src_jsutils_Symbol__ = __webpack_require__(13);
         //============================================================================
         var PRIVATE = __WEBPACK_IMPORTED_MODULE_1_common_micro_libs_src_jsutils_dataStore__.a.create();
+        var STATE_SYMBOL = Object(__WEBPACK_IMPORTED_MODULE_4_common_micro_libs_src_jsutils_Symbol__.a)("state");
         /**
  * Checks if the element has an attribute set that matches any of the aliases for a prop
  *
@@ -383,6 +390,29 @@
     /***/
     function(module, __webpack_exports__, __webpack_require__) {
         "use strict";
+        /* WEBPACK VAR INJECTION */
+        (function(global) {
+            /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() {
+                return GLOBAL;
+            });
+            /* unused harmony export getGlobal */
+            var _typeof = "function" === typeof Symbol && "symbol" === typeof Symbol.iterator ? function(obj) {
+                return typeof obj;
+            } : function(obj) {
+                return obj && "function" === typeof Symbol && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj;
+            };
+            var GLOBAL = function() {
+                /* global self, window, global */
+                if ("undefined" !== ("undefined" === typeof window ? "undefined" : _typeof(window))) return window;
+                if ("undefined" !== ("undefined" === typeof global ? "undefined" : _typeof(global))) return global;
+                if ("undefined" !== ("undefined" === typeof self ? "undefined" : _typeof(self))) return self;
+                return Function("return this;")();
+            }();
+        }).call(__webpack_exports__, __webpack_require__(9));
+    }, /* 4 */
+    /***/
+    function(module, __webpack_exports__, __webpack_require__) {
+        "use strict";
         /* harmony export (binding) */
         __webpack_require__.d(__webpack_exports__, "a", function() {
             return ComponentElement;
@@ -392,13 +422,13 @@
         /* harmony import */
         var __WEBPACK_IMPORTED_MODULE_1_common_micro_libs_src_jsutils_runtime_aliases__ = __webpack_require__(0);
         /* harmony import */
-        var __WEBPACK_IMPORTED_MODULE_2_observables_src_objectWatchProp__ = __webpack_require__(4);
+        var __WEBPACK_IMPORTED_MODULE_2_observables_src_objectWatchProp__ = __webpack_require__(5);
         /* harmony import */
         var __WEBPACK_IMPORTED_MODULE_3_common_micro_libs_src_domutils_domAddEventListener__ = __webpack_require__(11);
         /* harmony import */
         var __WEBPACK_IMPORTED_MODULE_4__utils__ = __webpack_require__(1);
         /* harmony import */
-        var __WEBPACK_IMPORTED_MODULE_5__polyfill_support__ = __webpack_require__(13);
+        var __WEBPACK_IMPORTED_MODULE_5__polyfill_support__ = __webpack_require__(14);
         var _typeof = "function" === typeof Symbol && "symbol" === typeof Symbol.iterator ? function(obj) {
             return typeof obj;
         } : function(obj) {
@@ -461,10 +491,13 @@
         //============================================================================
         var SHADOW_DOM_SUPPORTED = document.head.createShadowRoot || document.head.attachShadow;
         var EV_DEFAULT_INIT = {
-            bubbles: false,
-            cancelable: false,
-            composed: false
+            bubbles: true,
+            cancelable: true,
+            composed: true
         };
+        var CE_REGISTRY = window.customElements;
+        var warn = console.warn;
+        // eslint-disable-line
         /**
  * A generic class for building widgets based on HTML Custom Elements.
  *
@@ -503,7 +536,7 @@
                 //==============================================================
                 // Reflects changed html attributes to state.props
                 value: function(name, oldValue, newValue) {
-                    var propsDef = Object(__WEBPACK_IMPORTED_MODULE_4__utils__.h)(this.constructor);
+                    var propsDef = Object(__WEBPACK_IMPORTED_MODULE_4__utils__.i)(this.constructor);
                     propsDef[name] && (name = propsDef[name].name);
                     this.props[name] = newValue;
                 }
@@ -511,7 +544,7 @@
                 key: "destroy",
                 value: function() {
                     if (__WEBPACK_IMPORTED_MODULE_4__utils__.a.has(this)) {
-                        var state = Object(__WEBPACK_IMPORTED_MODULE_4__utils__.i)(this);
+                        var state = Object(__WEBPACK_IMPORTED_MODULE_4__utils__.j)(this);
                         __WEBPACK_IMPORTED_MODULE_4__utils__.a.delete(this);
                         if (state.destroyQueued) {
                             clearTimeout(state.destroyQueued);
@@ -526,7 +559,7 @@
             }, {
                 key: "onDestroy",
                 value: function(callback) {
-                    Object(__WEBPACK_IMPORTED_MODULE_4__utils__.i)(this).destroyCallbacks.push(callback);
+                    Object(__WEBPACK_IMPORTED_MODULE_4__utils__.j)(this).destroyCallbacks.push(callback);
                 }
             }, {
                 key: "$",
@@ -572,7 +605,7 @@
             }, {
                 key: "on",
                 value: function(eventNames, callback, capture) {
-                    return Object(__WEBPACK_IMPORTED_MODULE_3_common_micro_libs_src_domutils_domAddEventListener__.a)(this.$ui, eventNames, callback, capture);
+                    return Object(__WEBPACK_IMPORTED_MODULE_3_common_micro_libs_src_domutils_domAddEventListener__.a)(this, eventNames, callback, capture);
                 }
             }, {
                 key: "onPropsChange",
@@ -585,7 +618,7 @@
                     Object(__WEBPACK_IMPORTED_MODULE_5__polyfill_support__.b)(this);
                     // Cancel destroy if it is queued
                     if (__WEBPACK_IMPORTED_MODULE_4__utils__.a.has(this)) {
-                        var state = Object(__WEBPACK_IMPORTED_MODULE_4__utils__.i)(this);
+                        var state = Object(__WEBPACK_IMPORTED_MODULE_4__utils__.j)(this);
                         if (state.destroyQueued) {
                             clearTimeout(state.destroyQueued);
                             state.destroyQueued = null;
@@ -593,7 +626,7 @@
                         state.isMounted = true;
                         state.ready && this.mounted();
                     } else {
-                        Object(__WEBPACK_IMPORTED_MODULE_4__utils__.i)(this).isMounted = true;
+                        Object(__WEBPACK_IMPORTED_MODULE_4__utils__.j)(this).isMounted = true;
                         setupComponent(this);
                     }
                 }
@@ -604,7 +637,7 @@
                     // This seems to be currently the only way to ensure attached `onDestroy` logic run when
                     // the element is no longer needed.
                     if (__WEBPACK_IMPORTED_MODULE_4__utils__.a.has(this)) {
-                        var state = Object(__WEBPACK_IMPORTED_MODULE_4__utils__.i)(this);
+                        var state = Object(__WEBPACK_IMPORTED_MODULE_4__utils__.j)(this);
                         state.destroyQueued || (state.destroyQueued = setTimeout(this.destroy.bind(this), this.constructor.delayDestroy));
                         state.isMounted = false;
                         state.ready && this.unmounted();
@@ -617,12 +650,18 @@
                     if (this.constructor.prototype === this) throw new Error("can't be used on own prototype");
                     if (this._$props) return this._$props;
                     // On first call - setup the property on the instance
-                    var propDefinitions = Object(__WEBPACK_IMPORTED_MODULE_4__utils__.h)(this.constructor);
+                    var propDefinitions = Object(__WEBPACK_IMPORTED_MODULE_4__utils__.i)(this.constructor);
                     var props = {};
                     Object(__WEBPACK_IMPORTED_MODULE_1_common_micro_libs_src_jsutils_runtime_aliases__.f)(propDefinitions).forEach(function(propName) {
                         if (!propDefinitions[propName] || !propDefinitions[propName]._isAlias) {
                             var propValue = propDefinitions[propName].default.call(_this2);
-                            propDefinitions[propName].attr && !propDefinitions[propName].boolean && Object(__WEBPACK_IMPORTED_MODULE_4__utils__.b)(_this2, propDefinitions[propName]) && (propValue = Object(__WEBPACK_IMPORTED_MODULE_4__utils__.c)(_this2, propDefinitions[propName]));
+                            if (propDefinitions[propName].attr && !propDefinitions[propName].boolean && // FIXME: need to determine if Boolean attributes are working
+                            Object(__WEBPACK_IMPORTED_MODULE_4__utils__.c)(_this2, propDefinitions[propName])) propValue = Object(__WEBPACK_IMPORTED_MODULE_4__utils__.d)(_this2, propDefinitions[propName]); else if (_this2.hasOwnProperty(propName)) {
+                                // if the current element has a prop by this same name set directly on the instance,
+                                // then this implies that it was set prior to the Element being upgraded.
+                                propValue = _this2[propName];
+                                delete _this2[propName];
+                            }
                             Object(__WEBPACK_IMPORTED_MODULE_1_common_micro_libs_src_jsutils_runtime_aliases__.e)(props, propName, {
                                 configurable: true,
                                 enumerable: true,
@@ -652,8 +691,13 @@
          * Registers the web component. Uses tagName as default input param
          */
                 value: function(name) {
-                    Object(__WEBPACK_IMPORTED_MODULE_5__polyfill_support__.a)(this, name || this.tagName);
-                    window.customElements.define(name || this.tagName, this);
+                    name = name || this.tagName;
+                    Object(__WEBPACK_IMPORTED_MODULE_5__polyfill_support__.a)(this, name);
+                    if (CE_REGISTRY.get(name)) {
+                        CE_REGISTRY.get(name) !== this && warn(name + " is already a defined in customElementsRegistry as a different Class");
+                        return;
+                    }
+                    CE_REGISTRY.define(name, this);
                 }
             }, {
                 key: "renderTemplate",
@@ -676,7 +720,7 @@
          */
                 value: function(eleInstance) {
                     // FIXME: should two additional params be provided - one to get templateInstance and another to get templateElement?
-                    return Object(__WEBPACK_IMPORTED_MODULE_4__utils__.e)(eleInstance);
+                    return Object(__WEBPACK_IMPORTED_MODULE_4__utils__.f)(eleInstance);
                 }
             }, {
                 key: "tagName",
@@ -711,9 +755,9 @@
             }, {
                 key: "observedAttributes",
                 get: function() {
-                    var state = Object(__WEBPACK_IMPORTED_MODULE_4__utils__.d)(this);
+                    var state = Object(__WEBPACK_IMPORTED_MODULE_4__utils__.e)(this);
                     if (!state.observedAttrs) {
-                        var propList = Object(__WEBPACK_IMPORTED_MODULE_4__utils__.h)(this);
+                        var propList = Object(__WEBPACK_IMPORTED_MODULE_4__utils__.i)(this);
                         state.observedAttrs = Object(__WEBPACK_IMPORTED_MODULE_1_common_micro_libs_src_jsutils_runtime_aliases__.f)(propList).filter(function(p) {
                             return propList[p].attr;
                         });
@@ -724,7 +768,7 @@
             return ComponentElement;
         }(HTMLElement));
         function setupComponent(component) {
-            var state = Object(__WEBPACK_IMPORTED_MODULE_4__utils__.i)(component);
+            var state = Object(__WEBPACK_IMPORTED_MODULE_4__utils__.j)(component);
             var lastReadyState = null;
             var handleReadyChanges = function() {
                 if (lastReadyState === state.ready) return;
@@ -747,7 +791,7 @@
             component.onDestroy(state.readyWatcher);
             handleReadyChanges();
         }
-    }, /* 4 */
+    }, /* 5 */
     /***/
     function(module, __webpack_exports__, __webpack_require__) {
         "use strict";
@@ -765,7 +809,7 @@
         /* harmony import */
         var __WEBPACK_IMPORTED_MODULE_0_common_micro_libs_src_jsutils_runtime_aliases__ = __webpack_require__(0);
         /* harmony import */
-        var __WEBPACK_IMPORTED_MODULE_1_common_micro_libs_src_jsutils_Set__ = __webpack_require__(7);
+        var __WEBPACK_IMPORTED_MODULE_1_common_micro_libs_src_jsutils_Set__ = __webpack_require__(8);
         /* harmony import */
         var __WEBPACK_IMPORTED_MODULE_2_common_micro_libs_src_jsutils_nextTick__ = __webpack_require__(10);
         function _toConsumableArray(arr) {
@@ -1109,30 +1153,54 @@
         }
         /* harmony default export */
         __webpack_exports__.a = objectWatchProp;
-    }, /* 5 */
+    }, /* 6 */
     /***/
     function(module, __webpack_exports__, __webpack_require__) {
         "use strict";
-        /* WEBPACK VAR INJECTION */
-        (function(global) {
-            /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() {
-                return GLOBAL;
+        /* harmony export (immutable) */
+        __webpack_exports__.a = FakeIterator;
+        /* harmony import */
+        var __WEBPACK_IMPORTED_MODULE_0__runtime_aliases__ = __webpack_require__(0);
+        //-----------------------------------------------------------------------
+        // Great reference: http://2ality.com/2015/02/es6-iteration.html
+        function FakeIterator(keys, values) {
+            Object(__WEBPACK_IMPORTED_MODULE_0__runtime_aliases__.e)(this, "_", {
+                value: {
+                    keys: keys.slice(0),
+                    values: values ? values.slice(0) : null,
+                    idx: 0,
+                    total: keys.length
+                }
             });
-            /* unused harmony export getGlobal */
-            var _typeof = "function" === typeof Symbol && "symbol" === typeof Symbol.iterator ? function(obj) {
-                return typeof obj;
-            } : function(obj) {
-                return obj && "function" === typeof Symbol && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj;
-            };
-            var GLOBAL = function() {
-                /* global self, window, global */
-                if ("undefined" !== ("undefined" === typeof window ? "undefined" : _typeof(window))) return window;
-                if ("undefined" !== ("undefined" === typeof global ? "undefined" : _typeof(global))) return global;
-                if ("undefined" !== ("undefined" === typeof self ? "undefined" : _typeof(self))) return self;
-                return Function("return this;")();
-            }();
-        }).call(__webpack_exports__, __webpack_require__(8));
-    }, /* 6 */
+        }
+        Object(__WEBPACK_IMPORTED_MODULE_0__runtime_aliases__.d)(FakeIterator.prototype, {
+            constructor: {
+                value: FakeIterator
+            },
+            next: {
+                enumerable: true,
+                configurable: true,
+                value: function() {
+                    var response = {
+                        done: this._.idx === this._.total
+                    };
+                    if (response.done) {
+                        response.value = void 0;
+                        return response;
+                    }
+                    var nextIdx = this._.idx++;
+                    response.value = this._.keys[nextIdx];
+                    this._.values && (response.value = [ response.value, this._.values[nextIdx] ]);
+                    return response;
+                }
+            }
+        });
+        Object(__WEBPACK_IMPORTED_MODULE_0__runtime_aliases__.e)(FakeIterator.prototype, __WEBPACK_IMPORTED_MODULE_0__runtime_aliases__.a, {
+            value: function() {
+                return this;
+            }
+        });
+    }, /* 7 */
     /***/
     function(module, __webpack_exports__, __webpack_require__) {
         "use strict";
@@ -1140,19 +1208,19 @@
             value: true
         });
         /* harmony import */
-        var __WEBPACK_IMPORTED_MODULE_0__ComponentElement__ = __webpack_require__(3);
+        var __WEBPACK_IMPORTED_MODULE_0__ComponentElement__ = __webpack_require__(4);
         /* harmony namespace reexport (by provided) */
         __webpack_require__.d(__webpack_exports__, "ComponentElement", function() {
             return __WEBPACK_IMPORTED_MODULE_0__ComponentElement__.a;
         });
         /* harmony import */
-        var __WEBPACK_IMPORTED_MODULE_1__decorators_prop__ = __webpack_require__(14);
+        var __WEBPACK_IMPORTED_MODULE_1__decorators_prop__ = __webpack_require__(15);
         /* harmony namespace reexport (by provided) */
         __webpack_require__.d(__webpack_exports__, "prop", function() {
             return __WEBPACK_IMPORTED_MODULE_1__decorators_prop__.a;
         });
         /* harmony import */
-        var __WEBPACK_IMPORTED_MODULE_2__decorators_bind__ = __webpack_require__(15);
+        var __WEBPACK_IMPORTED_MODULE_2__decorators_bind__ = __webpack_require__(16);
         /* harmony namespace reexport (by provided) */
         __webpack_require__.d(__webpack_exports__, "bind", function() {
             return __WEBPACK_IMPORTED_MODULE_2__decorators_bind__.a;
@@ -1161,30 +1229,34 @@
         var __WEBPACK_IMPORTED_MODULE_3__utils__ = __webpack_require__(1);
         /* harmony reexport (binding) */
         __webpack_require__.d(__webpack_exports__, "getState", function() {
-            return __WEBPACK_IMPORTED_MODULE_3__utils__.i;
+            return __WEBPACK_IMPORTED_MODULE_3__utils__.j;
         });
         /* harmony reexport (binding) */
         __webpack_require__.d(__webpack_exports__, "getComponentTemplate", function() {
-            return __WEBPACK_IMPORTED_MODULE_3__utils__.f;
+            return __WEBPACK_IMPORTED_MODULE_3__utils__.g;
         });
         /* harmony reexport (binding) */
         __webpack_require__.d(__webpack_exports__, "getComponentInstanceTemplate", function() {
-            return __WEBPACK_IMPORTED_MODULE_3__utils__.e;
+            return __WEBPACK_IMPORTED_MODULE_3__utils__.f;
+        });
+        /* harmony reexport (binding) */
+        __webpack_require__.d(__webpack_exports__, "STATE_SYMBOL", function() {
+            return __WEBPACK_IMPORTED_MODULE_3__utils__.b;
         });
         /* harmony reexport (binding) */
         __webpack_require__.d(__webpack_exports__, "default", function() {
             return __WEBPACK_IMPORTED_MODULE_0__ComponentElement__.a;
         });
-    }, /* 7 */
+    }, /* 8 */
     /***/
     function(module, __webpack_exports__, __webpack_require__) {
         "use strict";
         /* unused harmony export Set */
         /* unused harmony export FakeSet */
         /* harmony import */
-        var __WEBPACK_IMPORTED_MODULE_0__getGlobal__ = __webpack_require__(5);
+        var __WEBPACK_IMPORTED_MODULE_0__getGlobal__ = __webpack_require__(3);
         /* harmony import */
-        var __WEBPACK_IMPORTED_MODULE_1__Iterator__ = __webpack_require__(9);
+        var __WEBPACK_IMPORTED_MODULE_1__Iterator__ = __webpack_require__(6);
         /* harmony import */
         var __WEBPACK_IMPORTED_MODULE_2__runtime_aliases__ = __webpack_require__(0);
         //============================================================
@@ -1268,7 +1340,7 @@
                 return this.values();
             }
         }));
-    }, /* 8 */
+    }, /* 9 */
     /***/
     function(module, exports) {
         var _typeof = "function" === typeof Symbol && "symbol" === typeof Symbol.iterator ? function(obj) {
@@ -1292,53 +1364,6 @@
         // We return undefined, instead of nothing here, so it's
         // easier to handle this case. if(!global) { ...}
         module.exports = g;
-    }, /* 9 */
-    /***/
-    function(module, __webpack_exports__, __webpack_require__) {
-        "use strict";
-        /* harmony export (immutable) */
-        __webpack_exports__.a = FakeIterator;
-        /* harmony import */
-        var __WEBPACK_IMPORTED_MODULE_0__runtime_aliases__ = __webpack_require__(0);
-        //-----------------------------------------------------------------------
-        // Great reference: http://2ality.com/2015/02/es6-iteration.html
-        function FakeIterator(keys, values) {
-            Object(__WEBPACK_IMPORTED_MODULE_0__runtime_aliases__.e)(this, "_", {
-                value: {
-                    keys: keys.slice(0),
-                    values: values ? values.slice(0) : null,
-                    idx: 0,
-                    total: keys.length
-                }
-            });
-        }
-        Object(__WEBPACK_IMPORTED_MODULE_0__runtime_aliases__.d)(FakeIterator.prototype, {
-            constructor: {
-                value: FakeIterator
-            },
-            next: {
-                enumerable: true,
-                configurable: true,
-                value: function() {
-                    var response = {
-                        done: this._.idx === this._.total
-                    };
-                    if (response.done) {
-                        response.value = void 0;
-                        return response;
-                    }
-                    var nextIdx = this._.idx++;
-                    response.value = this._.keys[nextIdx];
-                    this._.values && (response.value = [ response.value, this._.values[nextIdx] ]);
-                    return response;
-                }
-            }
-        });
-        Object(__WEBPACK_IMPORTED_MODULE_0__runtime_aliases__.e)(FakeIterator.prototype, __WEBPACK_IMPORTED_MODULE_0__runtime_aliases__.a, {
-            value: function() {
-                return this;
-            }
-        });
     }, /* 10 */
     /***/
     function(module, __webpack_exports__, __webpack_require__) {
@@ -1518,13 +1543,50 @@
     /***/
     function(module, __webpack_exports__, __webpack_require__) {
         "use strict";
+        /* harmony export (binding) */
+        __webpack_require__.d(__webpack_exports__, "a", function() {
+            return _Symbol;
+        });
+        /* unused harmony export FakeSymbol */
+        /* harmony import */
+        var __WEBPACK_IMPORTED_MODULE_0__getGlobal__ = __webpack_require__(3);
+        /* harmony import */
+        var __WEBPACK_IMPORTED_MODULE_1__Iterator__ = __webpack_require__(6);
+        //============================================================
+        var UNIQUE = Math.random().toString(36).substring(7);
+        var COUNTER = 1;
+        var SYMBOL_PROTOTYPE = {
+            toString: function() {
+                return "Symbol(" + this.description + ")." + this._id;
+            },
+            valueOf: function() {
+                return this.toString();
+            }
+        };
+        var _Symbol = __WEBPACK_IMPORTED_MODULE_0__getGlobal__.a.Symbol || FakeSymbol;
+        function FakeSymbol(description) {
+            if (this instanceof FakeSymbol) throw new TypeError("FakeSymbol is not a constructor");
+            return Object.create(SYMBOL_PROTOTYPE, {
+                description: {
+                    value: arguments.length ? description : ""
+                },
+                _id: {
+                    value: UNIQUE + "." + COUNTER++
+                }
+            });
+        }
+        __WEBPACK_IMPORTED_MODULE_1__Iterator__.a.iterator = __WEBPACK_IMPORTED_MODULE_1__Iterator__.a;
+    }, /* 14 */
+    /***/
+    function(module, __webpack_exports__, __webpack_require__) {
+        "use strict";
         /* harmony export (immutable) */
         __webpack_exports__.a = prepareComponentTemplate;
         /* harmony export (immutable) */
         __webpack_exports__.b = styleComponentInstanceElement;
         /* unused harmony export reStyleComponentInstanceSubtree */
         /* harmony import */
-        var __WEBPACK_IMPORTED_MODULE_0_common_micro_libs_src_jsutils_getGlobal__ = __webpack_require__(5);
+        var __WEBPACK_IMPORTED_MODULE_0_common_micro_libs_src_jsutils_getGlobal__ = __webpack_require__(3);
         /* harmony import */
         var __WEBPACK_IMPORTED_MODULE_1__utils__ = __webpack_require__(1);
         //--------------------------------------------------------------
@@ -1546,7 +1608,7 @@
             // FIXME: need additional checks here. ONly use shady if ShadowDom is not supported natively.
             //              need to use: ShadyCSS.nativeShadow to check if shadowroot is supported
             //              Also: should we check the Component's "useShadow" property?
-            supportsShadyCSS() && __WEBPACK_IMPORTED_MODULE_0_common_micro_libs_src_jsutils_getGlobal__.a.ShadyCSS.prepareTemplate(Object(__WEBPACK_IMPORTED_MODULE_1__utils__.f)(Component), tagName);
+            supportsShadyCSS() && __WEBPACK_IMPORTED_MODULE_0_common_micro_libs_src_jsutils_getGlobal__.a.ShadyCSS.prepareTemplate(Object(__WEBPACK_IMPORTED_MODULE_1__utils__.g)(Component), tagName);
         }
         /**
  * Styles the instance of a custom element using ShadyCSS
@@ -1556,7 +1618,7 @@
         function styleComponentInstanceElement(componentInstance) {
             supportsShadyCSS() && __WEBPACK_IMPORTED_MODULE_0_common_micro_libs_src_jsutils_getGlobal__.a.ShadyCSS.styleElement(componentInstance);
         }
-    }, /* 14 */
+    }, /* 15 */
     /***/
     function(module, __webpack_exports__, __webpack_require__) {
         "use strict";
@@ -1600,23 +1662,23 @@
             if (options && options.boolean) {
                 options.attr = true;
                 getter = descriptor.get = function() {
-                    return Object(__WEBPACK_IMPORTED_MODULE_2__utils__.b)(this, propDef);
+                    return Object(__WEBPACK_IMPORTED_MODULE_2__utils__.c)(this, propDef);
                 };
                 setter = descriptor.set = function(value) {
                     // When setting the value of this attribute directly on the instance (or instance.props),
                     // ensure that element attribute is also adjusted to reflect value.
                     // Do this only if the `value` is boolean - because when an attribute is added to the
                     // element, its value should be empty string.
-                    "boolean" === typeof value && (value && !Object(__WEBPACK_IMPORTED_MODULE_2__utils__.b)(this, propDef) ? this.setAttribute(prop, "") : !value && Object(__WEBPACK_IMPORTED_MODULE_2__utils__.b)(this, propDef) && this.removeAttribute(prop));
-                    return Object(__WEBPACK_IMPORTED_MODULE_2__utils__.b)(this, propDef);
+                    "boolean" === typeof value && (value && !Object(__WEBPACK_IMPORTED_MODULE_2__utils__.c)(this, propDef) ? this.setAttribute(prop, "") : !value && Object(__WEBPACK_IMPORTED_MODULE_2__utils__.c)(this, propDef) && this.removeAttribute(prop));
+                    return Object(__WEBPACK_IMPORTED_MODULE_2__utils__.c)(this, propDef);
                 };
             }
             propDef = Object(__WEBPACK_IMPORTED_MODULE_0_common_micro_libs_src_jsutils_objectExtend__.a)(getPropDef(Proto, prop, getter, setter), options);
-            descriptor.get = descriptor.set = lazyProp(prop, getter, setter);
+            descriptor.get = descriptor.set = lazyProp(prop);
             // Create a instance property for each alias as well
             propDef.aliases.length && propDef.aliases.forEach(function(propAliasName) {
                 if (!(propAliasName in Proto)) {
-                    var aliasPropGetterSetterSetup = lazyProp(propAliasName, getter, setter);
+                    var aliasPropGetterSetterSetup = lazyProp(propAliasName);
                     Object(__WEBPACK_IMPORTED_MODULE_1_common_micro_libs_src_jsutils_runtime_aliases__.e)(Proto, propAliasName, {
                         configurable: true,
                         get: aliasPropGetterSetterSetup,
@@ -1671,7 +1733,7 @@
                 };
                 // If the prop name has upper case letters, then its possible that it is
                 // defined as camelCase - create ka-bab alias.
-                RE_UPPER_CASE_LETTERS.test(name) && classProps[name].aliases.push(Object(__WEBPACK_IMPORTED_MODULE_2__utils__.g)(name));
+                RE_UPPER_CASE_LETTERS.test(name) && classProps[name].aliases.push(Object(__WEBPACK_IMPORTED_MODULE_2__utils__.h)(name));
             }
             return classProps[name];
         }
@@ -1688,14 +1750,14 @@
  *
  * @returns {Function}
  */
-        function lazyProp(propName, getter, setter) {
+        function lazyProp(propName) {
             // FIXME: getter/setter not being used?
             var $propName = "_$" + propName;
             return function() {
                 var isUpdateMode = 1 === arguments.length;
                 if (-1 !== Object.getOwnPropertyNames(this).indexOf($propName)) return isUpdateMode ? this[$propName] = arguments[0] : this[$propName];
                 // Ensure we write back to
-                var writeToPropName = Object(__WEBPACK_IMPORTED_MODULE_2__utils__.h)(this.constructor)[propName].name;
+                var writeToPropName = Object(__WEBPACK_IMPORTED_MODULE_2__utils__.i)(this.constructor)[propName].name;
                 Object(__WEBPACK_IMPORTED_MODULE_1_common_micro_libs_src_jsutils_runtime_aliases__.e)(this, $propName, {
                     configurable: true,
                     get: function() {
@@ -1710,7 +1772,7 @@
                 return this[$propName];
             };
         }
-    }, /* 15 */
+    }, /* 16 */
     /***/
     function(module, __webpack_exports__, __webpack_require__) {
         "use strict";
