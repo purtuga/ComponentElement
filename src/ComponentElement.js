@@ -326,10 +326,17 @@ export class ComponentElement extends HTMLElement {
      *
      */
     emit(eventName, data, eventInit) {
-        this.dispatchEvent(new CustomEvent(
+        const eventNameLowercase = eventName.toLowerCase();
+        const event = new CustomEvent(
             eventName,
             objectExtend({}, this.constructor.eventInitOptions, eventInit, { detail: data })
-        ));
+        );
+
+        if (this[eventNameLowercase] && "function" === typeof this[eventNameLowercase]) {
+            this[eventNameLowercase](event);
+        }
+
+        this.dispatchEvent(event);
     }
 
     /**
