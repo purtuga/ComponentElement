@@ -1,7 +1,13 @@
 import objectExtend from "common-micro-libs/src/jsutils/objectExtend"
-import { objectKeys, objectDefineProperty } from "common-micro-libs/src/jsutils/runtime-aliases"
+import {
+    objectKeys,
+    objectDefineProperty,
+    consoleWarn,
+    head
+} from "common-micro-libs/src/jsutils/runtime-aliases"
 import {objectWatchProp} from "observables/src/objectWatchProp"
 import domAddEventListener from "common-micro-libs/src/domutils/domAddEventListener"
+import domFind from "common-micro-libs/src/domutils/domFind"
 import {
     getState,
     PRIVATE,
@@ -17,10 +23,9 @@ import {
 } from "./polyfill-support"
 
 //============================================================================
-const SHADOW_DOM_SUPPORTED = document.head.createShadowRoot || document.head.attachShadow;
+const SHADOW_DOM_SUPPORTED = head.createShadowRoot || head.attachShadow;
 const EV_DEFAULT_INIT = { bubbles: true, cancelable: true, composed: true };
 const CE_REGISTRY = window.customElements;
-const warn = console.warn; // eslint-disable-line
 
 
 /**
@@ -63,7 +68,7 @@ export class ComponentElement extends HTMLElement {
 
         if (CE_REGISTRY.get(name)) {
             if (CE_REGISTRY.get(name) !== this) {
-                warn(`${name} is already a defined in customElementsRegistry as a different Class`);
+                consoleWarn(`${name} is already a defined in customElementsRegistry as a different Class`);
             }
             return;
         }
@@ -262,11 +267,7 @@ export class ComponentElement extends HTMLElement {
      * @returns {Array<HTMLElement>}
      */
     $$(selector) {
-        const result = this.$ui.querySelectorAll(selector);
-        if (Array.isArray(result)) {
-            return;
-        }
-        return Array.prototype.slice.call(result, 0);
+        return domFind(this.$ui, selector);
     }
 
     //~~~~~~~~~~~~~~~~~~~~~~ LIFE CYCLE HOOKS ~~~~~~~~~~~~~~~~~~~~~~
@@ -332,7 +333,7 @@ export class ComponentElement extends HTMLElement {
             objectExtend({}, this.constructor.eventInitOptions, eventInit, { detail: data })
         );
 
-        if (this[eventNameLowercase] && "function" === typeof this[eventNameLowercase]) {
+        if ("function" === typeof this[eventNameLowercase]) {
             this[eventNameLowercase](event);
         }
 
