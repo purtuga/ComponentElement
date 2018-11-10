@@ -21,6 +21,13 @@ export function elementHasAttributeForProp(ele, propDef) {
     return propDef.aliases.some(propAlias => ele.hasAttribute(propAlias));
 }
 
+/**
+ * Get the prop value from the possible HTML attributes (propName + aliases)
+ *
+ * @param ele
+ * @param propDef
+ * @returns {string}
+ */
 export function geAttributeValueForProp(ele, propDef) {
     let attrVal = "";
     propDef.aliases.some(propAlias => {

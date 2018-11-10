@@ -1,7 +1,10 @@
 import objectExtend from "common-micro-libs/src/jsutils/objectExtend"
+import {nextTick} from "common-micro-libs/src/jsutils/nextTick.js"
+import {throwIfThisIsPrototype} from "common-micro-libs/src/jsutils/throwIfThisIsPrototype.js"
 import {
     objectKeys,
     objectDefineProperty,
+    defineProperty,
     consoleWarn,
     head
 } from "common-micro-libs/src/jsutils/runtime-aliases"
@@ -27,6 +30,7 @@ const SHADOW_DOM_SUPPORTED = head.createShadowRoot || head.attachShadow;
 const EV_DEFAULT_INIT = { bubbles: true, cancelable: true, composed: true };
 const CE_REGISTRY = window.customElements;
 const PROPS_NOOP = Object.freeze(Object.create(null));
+let lazySetupUnderway = false;
 
 /**
  * A generic class for building widgets based on HTML Custom Elements.
@@ -151,49 +155,12 @@ export class ComponentElement extends HTMLElement {
     //  Instance Members
     //==============================================================
 
-    // Reflects changed html attributes to state.props
-    attributeChangedCallback(name, oldValue, newValue) {
-        const propsDef =  getPropsDefinition(this.constructor);
-        if (propsDef[name]) {
-            name = propsDef[name].name;
-        }
-        this.props[name] = newValue;
-    }
-
-    /**
-     * Destroy the instance of the widget
-     */
-    destroy() {
-        if (PRIVATE.has(this)) {
-            const state = getState(this);
-            PRIVATE.delete(this);
-            if (state.destroyQueued) {
-                clearTimeout(state.destroyQueued);
-                state.destroyQueued = null;
-            }
-            state.destroyCallbacks.splice(0).forEach(cb => cb());
-        }
-        if (this.parentNode) {
-            this.parentNode.removeChild(this);
-        }
-    }
-
-    /**
-     * Adds a callback to be executed when Component is destroyed.
-     * @param {Function} callback
-     */
-    onDestroy(callback) {
-        getState(this).destroyCallbacks.push(callback);
-    }
-
     /**
      * The Component's props.
      * @type {Object}
      */
     get props() {
-        if (this.constructor.prototype === this) {
-            throw new Error("can't be used on own prototype");
-        }
+        throwIfThisIsPrototype(this);
 
         if (this._$props) {
             return this._$props;
@@ -239,6 +206,25 @@ export class ComponentElement extends HTMLElement {
     }
 
     /**
+     * Returns a boolean indicating if Component has all required props fulfilled
+     */
+    get hasRequiredProps() {
+        throwIfThisIsPrototype(this);
+        return objectKeys(this.constructor.propsDef)
+            .filter(propName => this.constructor.propsDef[propName].required)
+            .every(propName => !!this.props[propName]);
+    }
+
+    /**
+     * returns a boolean indicating if component is connected to DOM
+     * @return {Boolean}
+     */
+    get isMounted() {
+        throwIfThisIsPrototype(this);
+        return getState(this).isMounted
+    }
+
+    /**
      * Pointer to the UI of the Component. Value is will either be the `showdowRoot` or the element
      * itself.
      *
@@ -247,6 +233,35 @@ export class ComponentElement extends HTMLElement {
     get $ui() {
         return this._$ui;
     }
+
+
+    /**
+     * Destroy the instance of the widget
+     */
+    destroy() {
+        if (PRIVATE.has(this)) {
+            const state = getState(this);
+            PRIVATE.delete(this);
+            if (state.destroyQueued) {
+                clearTimeout(state.destroyQueued);
+                state.destroyQueued = null;
+            }
+            state.destroyCallbacks.splice(0).forEach(cb => cb());
+        }
+        if (this.parentNode) {
+            this.parentNode.removeChild(this);
+        }
+        this.didDestroy();
+    }
+
+    /**
+     * Adds a callback to be executed when Component is destroyed.
+     * @param {Function} callback
+     */
+    onDestroy(callback) {
+        getState(this).destroyCallbacks.push(callback);
+    }
+
 
     /**
      * Find an element in the `$ui` (alias for `querySelector()`)
@@ -271,40 +286,157 @@ export class ComponentElement extends HTMLElement {
         return domFind(this.$ui, selector);
     }
 
-    //~~~~~~~~~~~~~~~~~~~~~~ LIFE CYCLE HOOKS ~~~~~~~~~~~~~~~~~~~~~~
-
     /**
-     * Called to initialize the component, but only after only after all required
-     * props have been provided.  This method could be called multiple times, if component
-     * has been destroyed, but then re-attached to the DOM Tree.
+     * Updates the component's DOM by running through the render lifecycle of:
      *
+     *  `willRender()`
+     *  `render()`
+     *  `didRender()`
+     *
+     * This method probably should not be called directly. It is automatically
+     * called when props change
      */
-    init() {}
+    get update() {
+        throwIfThisIsPrototype(this);
+
+        if (lazySetupUnderway) {
+            return undefined;
+        }
+
+        const _update = () => {
+            if (!this.isMounted) {
+                return;
+            }
+
+            const shouldRender = this.willRender();
+
+            if ("boolean" !== typeof shouldRender || shouldRender) {
+                const view = this.render();
+                // If it looks like html, then use innerHTML
+                if ("string" === typeof view) {
+                    this.$ui.innerHTML = view;
+                } else {
+                    this.$ui.textContent = "";
+                    this.$ui.appendChild(view);
+                }
+                this.didRender();
+            }
+        };
+
+        lazySetupUnderway = true;
+        defineProperty(this, "update", _update);
+        lazySetupUnderway = false;
+
+        return _update;
+    }
+
+    get _queueUpdate() {
+        throwIfThisIsPrototype(this);
+
+        if (lazySetupUnderway) {
+            return undefined;
+        }
+
+        const __queueUpdate = () => {
+            nextTick.queue(this.update);
+        };
+
+        lazySetupUnderway = true;
+        defineProperty(this, "_queueUpdate", __queueUpdate);
+        lazySetupUnderway = false;
+
+        return __queueUpdate;
+    }
+
+    //--------------------------------------------------------------
+    //~~~~~~~~~~~~~~~~~~~~~~ LIFE CYCLE HOOKS ~~~~~~~~~~~~~~~~~~~~~~
+    //--------------------------------------------------------------
 
     /**
-     * Component is ready to be started. This means that all required props/param have been provided.
+     * Called to initialize the component. At this point `this.$ui` has been set
+     * (to either `shadowRoot` or `this`), but nothing has ben rendered.
      */
-    ready() {}
+    didInit() {
+        // FIXME: delete after v2
+        if ("init" in this) {
+            if (process.env.NODE_ENV !== "production") {
+                consoleWarn(`${this.constructor}.init() is Deprecated! Use .didInit()`);
+            }
+            this.init();
+        }
+    }
+
+    /**
+     * Component was mounted (attached to DOM)
+     */
+    didMount() {
+        // FIXME: delete after v2
+        if ("ready" in this) {
+            if (process.env.NODE_ENV !== "production") {
+                consoleWarn(`${this.constructor}.ready() is Deprecated! Use .didMount()`);
+            }
+            this.ready();
+        }
+        // FIXME: delete after v2
+        if ("mounted" in this) {
+            if (process.env.NODE_ENV !== "production") {
+                consoleWarn(`${this.constructor}.mounted() is Deprecated! Use .didMount()`);
+            }
+
+            /**
+             * Called only after the component has been initialized (`init()` has been called).
+             * This method could be called multiple times depending on whether the element is
+             * added/removed from DOM.
+             * This is a good place to setup global events and/or initiate retrieval of data.
+             */
+            // mounted() {} // FIXME: cleanup
+            this.mounted();
+        }
+    }
+
+    /**
+     * Component's render function is about to be called. if a `Boolean` `false` is
+     * returned, `render()` will be canceled.
+     * @return {Boolean}
+     */
+    willRender() {}
+
+    /**
+     * Render the Component's content
+     *
+     * @return {HTMLElement|DocumentFragment}
+     */
+    render(){}
+
+    /**
+     * Component has been rendered and dates flushed to DOM
+     */
+    didRender() {}
 
     /**
      * Component is not ready, and if already stated, it might need adjusted. This means that not all
      * required props are currently defined.
      */
-    unready() {}
-
-    /**
-     * Called only after the component has been initialized (`init()` has been called).
-     * This method could be called multiple times depending on whether the element is
-     * added/removed from DOM.
-     * This is a good place to setup global events and/or initiate retrieval of data.
-     */
-    mounted() {}
-
+    // FIXME: cleanup
+    // unready() {}
 
     /**
      * Called if component has been initialized (`init()` has run).
      */
-    unmounted() {}
+    didUnmount() {
+        // FIXME: delete after v2
+        if ("unmounted" in this) {
+            if (process.env.NODE_ENV !== "production") {
+                consoleWarn(`${this.constructor}.unmounted() is Deprecated! Use .didUnmount()`);
+            }
+            this.unmounted();
+        }
+    }
+
+    /**
+     * Component was destroyed (destroy callback were already called)
+     */
+    didDestroy() {}
 
 
     //~~~~~~~~~~~~~~~~~~~~~~ EVENTEMITTER INTERFACE ~~~~~~~~~~~~~~~~~~~~~~
@@ -370,27 +502,30 @@ export class ComponentElement extends HTMLElement {
         return objectWatchProp(this.props, propName, callback);
     }
 
-    //~~~~~~~~~~~~~~~~~~~~~~ BUITINS ~~~~~~~~~~~~~~~~~~~~~~
+    //~~~~~~~~~~~~~~~~~~~~~~ NATIVE METHODS ~~~~~~~~~~~~~~~~~~~~~~
+
+    // Reflects changed html attributes to state.props
+    attributeChangedCallback(name, oldValue, newValue) {
+        const propsDef =  getPropsDefinition(this.constructor);
+        if (propsDef[name]) {
+            name = propsDef[name].name;
+        }
+        this.props[name] = newValue;
+    }
 
     connectedCallback() {
-        styleComponentInstanceElement(this);
+        styleComponentInstanceElement(this); // FIXME: is this the right time to call polyfill styling?
 
-        // Cancel destroy if it is queued
-        if (PRIVATE.has(this)) {
-            const state = getState(this);
-            if (state.destroyQueued) {
-                clearTimeout(state.destroyQueued);
-                state.destroyQueued = null;
-            }
-            state.isMounted = true;
-            if (state.ready) {
-                this.mounted();
-            }
+        const state = getState(this);
+
+        if (state.destroyQueued) {
+            clearTimeout(state.destroyQueued);
+            state.destroyQueued = null;
         }
-        else {
-            getState(this).isMounted = true;
-            setupComponent(this);
-        }
+
+        state.isMounted = true;
+        this.didMount();
+        this._queueUpdate();
     }
 
     disconnectedCallback() {
@@ -403,60 +538,78 @@ export class ComponentElement extends HTMLElement {
                 state.destroyQueued = setTimeout(this.destroy.bind(this), this.constructor.delayDestroy);
             }
             state.isMounted = false;
-            if (state.ready) {
-                this.unmounted();
-            }
         }
+
+        this.didUnmount();
     }
 }
+
 export default ComponentElement;
 
-function setupComponent(component) {
-    const state = getState(component);
-    let lastReadyState = null;
-    const handleReadyChanges = () => {
-        if (lastReadyState === state.ready) {
-            return;
-        }
-
-        lastReadyState = state.ready;
-
-        if (state.ready) {
-            if (!state.hasTemplate) {
-                // component._$ui.innerHTML = component.constructor.template;
-                component._$ui.appendChild(
-                    component.constructor.renderTemplate(component)
-                );
-                state.hasTemplate = true;
-            }
-
-            component.ready();
-
-            if (state.isMounted) {
-                component.mounted();
-            }
-        }
-        else if (state.hasTemplate) {
-            component.unready();
-        }
-
-    };
-
-    if (component.constructor.useShadow && SHADOW_DOM_SUPPORTED) {
+function setupComponent (component) {
+    const { useShadow, shadowMode } = component.constructor;
+    if (useShadow && SHADOW_DOM_SUPPORTED) {
         if (component.shadowRoot) {
             component._$ui = component.shadowRoot;
         }
         else {
-            component._$ui = component.attachShadow({ mode: component.constructor.shadowMode });
+            component._$ui = component.attachShadow({ mode: shadowMode });
         }
     }
     else {
         component._$ui = component;
     }
 
-    component.init();
-
-    state.readyWatcher = objectWatchProp(state, "ready", handleReadyChanges);
-    component.onDestroy(state.readyWatcher);
-    handleReadyChanges();
+    component.onPropsChange(component._queueUpdate);
+    component.didInit();
 }
+
+// function __setupComponent(component) {
+//     const state = getState(component);
+//     let lastReadyState = null;
+//     const handleReadyChanges = () => {
+//         if (lastReadyState === state.ready) {
+//             return;
+//         }
+//
+//         lastReadyState = state.ready;
+//
+//         if (state.ready) {
+//             if (!state.hasTemplate) {
+//                 // component._$ui.innerHTML = component.constructor.template;
+//                 component._$ui.appendChild(
+//                     component.constructor.renderTemplate(component)
+//                 );
+//                 state.hasTemplate = true;
+//             }
+//
+//             component.didMount();
+//
+//             if (state.isMounted) {
+//                 component.didMount();
+//             }
+//         }
+//         else if (state.hasTemplate) {
+//             component.unready();
+//         }
+//
+//     };
+//
+//     if (component.constructor.useShadow && SHADOW_DOM_SUPPORTED) {
+//         if (component.shadowRoot) {
+//             component._$ui = component.shadowRoot;
+//         }
+//         else {
+//             component._$ui = component.attachShadow({ mode: component.constructor.shadowMode });
+//         }
+//     }
+//     else {
+//         component._$ui = component;
+//     }
+//
+//     component.didInit();
+//
+//     state.readyWatcher = objectWatchProp(state, "ready", handleReadyChanges);
+//     component.onDestroy(state.readyWatcher);
+//     handleReadyChanges();
+// }

@@ -17,3 +17,10 @@ export const generateTagName = (() => {
         return tagNames.next().value;
     }
 })();
+
+/**
+ * Create a delay
+ * @param {Number} [ms=0]
+ * @returns {Promise<any>}
+ */
+export const delay = ms => new Promise(resolve => setTimeout(resolve, ms || 0));
