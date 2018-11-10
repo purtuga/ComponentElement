@@ -26,7 +26,7 @@ import {
 const SHADOW_DOM_SUPPORTED = head.createShadowRoot || head.attachShadow;
 const EV_DEFAULT_INIT = { bubbles: true, cancelable: true, composed: true };
 const CE_REGISTRY = window.customElements;
-
+const PROPS_NOOP = Object.freeze(Object.create(null));
 
 /**
  * A generic class for building widgets based on HTML Custom Elements.
@@ -50,6 +50,7 @@ export class ComponentElement extends HTMLElement {
      * @name propsDef
      * @type {Object<String,ComponentElement~PropDefinition>}
      */
+    static propsDef = PROPS_NOOP;
 
     /**
      * Return default registration tag name

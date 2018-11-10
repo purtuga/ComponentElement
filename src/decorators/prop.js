@@ -74,8 +74,13 @@ function getDecoratorDescriptor(key, proxyToPropName, componentPropDefinition) {
 
     if (componentPropDefinition) {
         DecoratorDescriptor.finisher = function (Klass) {
+            // Create Class "propsDef" that inherits from super class
             if (!Klass.hasOwnProperty("propsDef")) {
-                defineProperty(Klass, "propsDef", Object.create(null));
+                defineProperty(
+                    Klass,
+                    "propsDef",
+                    objectExtend(Object.create(null), Klass.propsDef)
+                );
             }
             Klass.propsDef[key] = componentPropDefinition;
         };
@@ -118,9 +123,7 @@ function getPropSetup(name, initializer, validator, propDef) {
             boolean: false,
             default: initializer || NOOP,
             filter: validator || NOOP,
-            aliases: [
-                name.toLowerCase()
-            ]
+            aliases: []
             // _isAlias: --- used in getPropsDefinition()
         },
         propDef
@@ -151,6 +154,11 @@ function getPropSetup(name, initializer, validator, propDef) {
 
             return response;
         }
+    }
+
+    // Add name lowercase alias - if applicable
+    if (name.toLowerCase() !== name) {
+        propertyDefinition.aliases.push(name.toLowerCase());
     }
 
     // If the prop name has upper case letters, then its possible that it is

@@ -1,10 +1,12 @@
+import {ComponentElement} from "../src";
+
 describe("ComponentElement", function () {
-    const ComponentElement = window.ComponentElement.ComponentElement;
     class TestEle extends ComponentElement {
         static get tagName() {
             return "test-ele";
         }
     }
+
     TestEle.define();
 
     describe("Static Members", function () {
