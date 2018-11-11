@@ -185,7 +185,7 @@ export class ComponentElement extends HTMLElement {
 
                 if (
                     propDefinitions[propName].attr &&
-                    !propDefinitions[propName].boolean &&   // FIXME: need to determine if Boolean attributes are working
+                    !propDefinitions[propName].boolean &&
                     elementHasAttributeForProp(this, propDefinitions[propName])
                 ) {
                     propValue = geAttributeValueForProp(this, propDefinitions[propName]);

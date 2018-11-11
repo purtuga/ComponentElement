@@ -26,7 +26,6 @@ describe("ComponentElement", function () {
         });
     });
 
-
     describe("Instance Members", function () {
         class TestEle extends ComponentElement {
             static get tagName() {
@@ -55,7 +54,6 @@ describe("ComponentElement", function () {
             });
         })
     });
-
 
     describe("Lifecycle Hooks", function () {
         beforeEach(function () {
@@ -307,6 +305,8 @@ describe("ComponentElement", function () {
                 @prop({ attr: true }) propThree;
                 @prop({ attr: true }) propFour = "prop four value";
 
+                @prop({ boolean: true }) propFive;
+
                 render() {
                     return `
 <div id="propOne">${this.props.propOne || ""}</div>
@@ -425,8 +425,53 @@ describe("ComponentElement", function () {
         });
 
         it("should handle boolean attributes", function () {
-            expect(true).to.be.false; // FIXME: finish test: handle boolean attributes
+            return delay()
+                .then(() => {
+                    expect(this.ele.props.propFive, "propFive initial value was not false").to.be.false;
+
+                    this.ele.propFive = true;
+                    expect(this.ele.props.propFive, "propFive should not be set via instance prop").to.be.false;
+
+                    this.ele.setAttribute("prop-five", "");
+                    expect(this.ele.props.propFive, "propFive was not set via html attribute").to.be.true;
+                });
         });
 
+        it("should execute onPropsChange() callback", function () {
+            const propsSpy = sinon.spy();
+
+            this.ele.onPropsChange(propsSpy);
+            this.ele.propOne = "set to one";
+
+            expect(propsSpy.called, "callbacks seem to be processed synchronously (should be nextTick)").to.be.false;
+
+            return delay()
+                .then(() => {
+                    expect(propsSpy.called, "callack was not executed").to.be.true
+                    expect(propsSpy.calledOnce, "callback not executed once").to.be.true;
+                });
+        });
+
+        it("should execute onPropsChange() callback for specific prop", function () {
+            const propOneSpy = sinon.spy();
+
+            this.ele.onPropsChange(propOneSpy, "propOne");
+            this.ele.propTwo = "set to one";
+
+            expect(propOneSpy.called, "callbacks seem to be processed synchronously (should be nextTick)").to.be.false;
+
+            return delay()
+                .then(() => {
+                    expect(propOneSpy.called, "callack was not executed").to.be.false
+                    expect(propOneSpy.calledOnce, "callback not executed once").to.be.false;
+
+                    this.ele.propOne = "update one";
+                    return delay();
+                })
+                .then(() => {
+                    expect(propOneSpy.called, "callack was not executed").to.be.true
+                    expect(propOneSpy.calledOnce, "callback not executed once").to.be.true;
+                });
+        });
     });
 });
