@@ -86,7 +86,7 @@ export class ComponentElement extends HTMLElement {
      *
      * @type {Number}
      */
-    static get delayDestroy() { return 250; }
+    static get delayDestroy() { return 0; }
 
     /**
      * If Shadow DOM should be used. Default `true`
@@ -107,7 +107,13 @@ export class ComponentElement extends HTMLElement {
      *
      * @type {String|HTMLTemplateElement}
      */
-    static get template() { return "<div></div>"; }
+    static get template() {
+        // fixme: remove post v2.
+        if (process.env.NODE_ENV !== "production") {
+            consoleWarn(`${this.name}.template is Deprecated! Use .render() method`);
+        }
+        return "<div></div>";
+    }
 
     /**
      * Renderer for the template and return what should be inserted into shadowDom.
@@ -127,6 +133,10 @@ export class ComponentElement extends HTMLElement {
      * @return {HTMLElement|DocumentFragment}
      */
     static renderTemplate(eleInstance) {
+        // FIXME: remove post v2.
+        if (process.env.NODE_ENV !== "production") {
+            consoleWarn(`${this.name}.renderTemplate is Deprecated! Use .render() method`);
+        }
         // FIXME: should two additional params be provided - one to get templateInstance and another to get templateElement?
         return getComponentInstanceTemplate(eleInstance);
     }
@@ -234,7 +244,6 @@ export class ComponentElement extends HTMLElement {
         return this._$ui;
     }
 
-
     /**
      * Destroy the instance of the widget
      */
@@ -311,14 +320,7 @@ export class ComponentElement extends HTMLElement {
             const shouldRender = this.willRender();
 
             if ("boolean" !== typeof shouldRender || shouldRender) {
-                const view = this.render();
-                // If it looks like html, then use innerHTML
-                if ("string" === typeof view) {
-                    this.$ui.innerHTML = view;
-                } else {
-                    this.$ui.textContent = "";
-                    this.$ui.appendChild(view);
-                }
+                this._setView(this.render());
                 this.didRender();
             }
         };
@@ -348,6 +350,23 @@ export class ComponentElement extends HTMLElement {
         return __queueUpdate;
     }
 
+    /**
+     * Handles the render output - which normally means flush it ot DOM.
+     * Override for different rendere libraries
+     *
+     * @param renderOutput
+     * @private
+     */
+    _setView(renderOutput) {
+        // If it looks like html, then use innerHTML
+        if ("string" === typeof renderOutput) {
+            this.$ui.innerHTML = renderOutput;
+        } else {
+            this.$ui.textContent = "";
+            this.$ui.appendChild(renderOutput);
+        }
+    }
+
     //--------------------------------------------------------------
     //~~~~~~~~~~~~~~~~~~~~~~ LIFE CYCLE HOOKS ~~~~~~~~~~~~~~~~~~~~~~
     //--------------------------------------------------------------
@@ -360,7 +379,7 @@ export class ComponentElement extends HTMLElement {
         // FIXME: delete after v2
         if ("init" in this) {
             if (process.env.NODE_ENV !== "production") {
-                consoleWarn(`${this.constructor}.init() is Deprecated! Use .didInit()`);
+                consoleWarn(`${this.constructor.name}.init() is Deprecated! Use .didInit()`);
             }
             this.init();
         }
@@ -373,14 +392,14 @@ export class ComponentElement extends HTMLElement {
         // FIXME: delete after v2
         if ("ready" in this) {
             if (process.env.NODE_ENV !== "production") {
-                consoleWarn(`${this.constructor}.ready() is Deprecated! Use .didMount()`);
+                consoleWarn(`${this.constructor.name}.ready() is Deprecated! Use .didMount()`);
             }
             this.ready();
         }
         // FIXME: delete after v2
         if ("mounted" in this) {
             if (process.env.NODE_ENV !== "production") {
-                consoleWarn(`${this.constructor}.mounted() is Deprecated! Use .didMount()`);
+                consoleWarn(`${this.constructor.name}.mounted() is Deprecated! Use .didMount()`);
             }
 
             /**
@@ -427,7 +446,7 @@ export class ComponentElement extends HTMLElement {
         // FIXME: delete after v2
         if ("unmounted" in this) {
             if (process.env.NODE_ENV !== "production") {
-                consoleWarn(`${this.constructor}.unmounted() is Deprecated! Use .didUnmount()`);
+                consoleWarn(`${this.constructor.name}.unmounted() is Deprecated! Use .didUnmount()`);
             }
             this.unmounted();
         }
