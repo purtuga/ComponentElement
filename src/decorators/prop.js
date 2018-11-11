@@ -1,6 +1,6 @@
-import objectExtend from "common-micro-libs/src/jsutils/objectExtend"
-import { defineProperty, consoleWarn} from "common-micro-libs/src/jsutils/runtime-aliases"
-import {throwIfThisIsPrototype} from "common-micro-libs/src/jsutils/throwIfThisIsPrototype"
+import objectExtend from "@purtuga/common/src/jsutils/objectExtend"
+import { defineProperty, consoleWarn} from "@purtuga/common/src/jsutils/runtime-aliases"
+import {throwIfThisIsPrototype} from "@purtuga/common/src/jsutils/throwIfThisIsPrototype"
 import {getKebabCase, elementHasAttributeForProp} from "../utils"
 
 //===============================================================================

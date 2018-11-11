@@ -1,7 +1,7 @@
-import objectExtend from "common-micro-libs/src/jsutils/objectExtend"
-import dataStore from "common-micro-libs/src/jsutils/dataStore"
-import { isArray, objectKeys } from "common-micro-libs/src/jsutils/runtime-aliases"
-import {Symbol} from "common-micro-libs/src/jsutils/Symbol"
+import objectExtend from "@purtuga/common/src/jsutils/objectExtend"
+import dataStore from "@purtuga/common/src/jsutils/dataStore"
+import { isArray, objectKeys } from "@purtuga/common/src/jsutils/runtime-aliases"
+import {Symbol} from "@purtuga/common/src/jsutils/Symbol"
 import {Ev} from "./Ev.js";
 //============================================================================
 export const PRIVATE = dataStore.create();

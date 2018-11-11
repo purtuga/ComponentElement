@@ -1,8 +1,8 @@
 //--------------------------------------------------------------
 // Utilities to work with polyfills like ShadyCSS
 //--------------------------------------------------------------
-import {GLOBAL} from "common-micro-libs/src/jsutils/getGlobal"
-import {domFind} from "common-micro-libs/src/domutils/domFind.js"
+import {GLOBAL} from "@purtuga/common/src/jsutils/getGlobal"
+import {domFind} from "@purtuga/common/src/domutils/domFind.js"
 import {getState} from "./utils"
 
 //===========================================================================================

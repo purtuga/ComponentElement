@@ -1,14 +1,14 @@
-import objectExtend from "common-micro-libs/src/jsutils/objectExtend"
-import {nextTick} from "common-micro-libs/src/jsutils/nextTick.js"
-import {throwIfThisIsPrototype} from "common-micro-libs/src/jsutils/throwIfThisIsPrototype.js"
+import objectExtend from "@purtuga/common/src/jsutils/objectExtend"
+import {nextTick} from "@purtuga/common/src/jsutils/nextTick.js"
+import {throwIfThisIsPrototype} from "@purtuga/common/src/jsutils/throwIfThisIsPrototype.js"
 import {
     objectKeys,
     defineProperty,
     consoleWarn,
     head
-} from "common-micro-libs/src/jsutils/runtime-aliases"
-import domAddEventListener from "common-micro-libs/src/domutils/domAddEventListener"
-import domFind from "common-micro-libs/src/domutils/domFind"
+} from "@purtuga/common/src/jsutils/runtime-aliases"
+import domAddEventListener from "@purtuga/common/src/domutils/domAddEventListener"
+import domFind from "@purtuga/common/src/domutils/domFind"
 import {
     getState,
     PRIVATE,

@@ -51,11 +51,8 @@
         "url": "https://github.com/purtuga/ComponentElement/issues"
     },
     "homepage": "https://github.com/purtuga/ComponentElement#readme",
-    "project-base": {
-        "decorators-legacy": true
-    },
     "dependencies": {
-        "common-micro-libs": "github:purtuga/common-micro-libs#master"
+        "@purtuga/common": "^3.0.0"
     },
     "devDependencies": {
         "@purtuga/project-base": "^2.0.0"

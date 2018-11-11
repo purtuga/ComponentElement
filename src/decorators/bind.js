@@ -1,5 +1,5 @@
-import {defineProperty} from "common-micro-libs/src/jsutils/runtime-aliases";
-import {throwIfThisIsPrototype} from "common-micro-libs/src/jsutils/throwIfThisIsPrototype.js"
+import {defineProperty} from "@purtuga/common/src/jsutils/runtime-aliases";
+import {throwIfThisIsPrototype} from "@purtuga/common/src/jsutils/throwIfThisIsPrototype.js"
 /**
  * Binds the given method to the Class instance on first `get`.
  *
