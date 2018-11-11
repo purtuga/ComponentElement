@@ -3,19 +3,16 @@ import {nextTick} from "common-micro-libs/src/jsutils/nextTick.js"
 import {throwIfThisIsPrototype} from "common-micro-libs/src/jsutils/throwIfThisIsPrototype.js"
 import {
     objectKeys,
-    // objectDefineProperty,  // FIXME: cleanup
     defineProperty,
     consoleWarn,
     head
 } from "common-micro-libs/src/jsutils/runtime-aliases"
-// import {objectWatchProp} from "observables/src/objectWatchProp" // FIXME: cleanup
 import domAddEventListener from "common-micro-libs/src/domutils/domAddEventListener"
 import domFind from "common-micro-libs/src/domutils/domFind"
 import {
     getState,
     PRIVATE,
     getPropsDefinition,
-    getComponentInstanceTemplate,
     getComponentClassState,
     elementHasAttributeForProp,
     geAttributeValueForProp
@@ -132,13 +129,12 @@ export class ComponentElement extends HTMLElement {
      *
      * @return {HTMLElement|DocumentFragment}
      */
-    static renderTemplate(eleInstance) {
+    static renderTemplate(/*eleInstance*/) {
         // FIXME: remove post v2.
         if (process.env.NODE_ENV !== "production") {
-            consoleWarn(`${this.name}.renderTemplate is Deprecated! Use .render() method`);
+            consoleWarn(`${this.name}.renderTemplate is NO LONGER SUPPORTED! Use .render() method`);
         }
-        // FIXME: should two additional params be provided - one to get templateInstance and another to get templateElement?
-        return getComponentInstanceTemplate(eleInstance);
+        return;
     }
 
     /**
@@ -423,14 +419,8 @@ export class ComponentElement extends HTMLElement {
                 consoleWarn(`${this.constructor.name}.mounted() is Deprecated! Use .didMount()`);
             }
 
-            /**
-             * Called only after the component has been initialized (`init()` has been called).
-             * This method could be called multiple times depending on whether the element is
-             * added/removed from DOM.
-             * This is a good place to setup global events and/or initiate retrieval of data.
-             */
-            // mounted() {} // FIXME: cleanup
-            this.mounted();
+            // mounted() {}
+            this.mounted(); // FIXME: remove post v2
         }
     }
 
@@ -455,13 +445,6 @@ export class ComponentElement extends HTMLElement {
      * Component has been rendered and dates flushed to DOM
      */
     didRender() {}
-
-    /**
-     * Component is not ready, and if already stated, it might need adjusted. This means that not all
-     * required props are currently defined.
-     */
-    // FIXME: cleanup
-    // unready() {}
 
     /**
      * Called if component has been initialized (`init()` has run).
@@ -543,7 +526,6 @@ export class ComponentElement extends HTMLElement {
      */
     onPropsChange(callback, propName) {
         return getState(this).ev.on(propName || EVENT_ANY, callback);
-        // return objectWatchProp(this.props, propName, callback); // FIXME: cleanup
     }
 
     //~~~~~~~~~~~~~~~~~~~~~~ NATIVE METHODS ~~~~~~~~~~~~~~~~~~~~~~

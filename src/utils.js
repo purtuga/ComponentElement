@@ -1,6 +1,5 @@
 import objectExtend from "common-micro-libs/src/jsutils/objectExtend"
 import dataStore from "common-micro-libs/src/jsutils/dataStore"
-// import objectWatchProp from "observables/src/objectWatchProp"// FIXME: cleanup
 import { isArray, objectKeys } from "common-micro-libs/src/jsutils/runtime-aliases"
 import {Symbol} from "common-micro-libs/src/jsutils/Symbol"
 import {Ev} from "./Ev.js";
@@ -45,35 +44,10 @@ export function getState(instance) {
             isCssScopingDone: false,
             templateEle: null,
             ev: new Ev(),
-
-
-
-            // ready: false,           // We have all required params
-            // readyWatcher: null,
-            // props: instance.props,
             destroyCallbacks: [],
             destroyQueued: null,
             isMounted: false
-            // ,
-            // hasTemplate: false // template has been inserted into component.$ui
         };
-
-        // FIXME: cleanup
-
-        // Create all props
-        // const propDefintions    = getPropsDefinition(instance.constructor);
-        // const required          = objectKeys(propDefintions).filter(propName => !propDefintions[propName]._isAlias && propDefintions[propName].required);
-        // const setReadyState     = () => {
-        //     if (!required.length || required.every(propName => !!state.props[propName])) {
-        //         state.ready = true;
-        //     }
-        //     else {
-        //         state.ready = false;
-        //     }
-        // };
-        //
-        // required.forEach(propName => objectWatchProp(state.props, propName, setReadyState));
-        // setReadyState();
 
         PRIVATE.set(instance, state);
     }
