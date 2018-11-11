@@ -176,9 +176,8 @@ export class ComponentElement extends HTMLElement {
             return undefined;
         }
 
+        lazySetupUnderway = true;
 
-
-        // On first call - setup the property on the instance
         const propDefinitions = getPropsDefinition(this.constructor);
         let props = {};
         const ev = getState(this).ev;
@@ -223,6 +222,8 @@ export class ComponentElement extends HTMLElement {
         });
 
         defineProperty(this, "props", props, undefined, undefined, true, true, false);
+        lazySetupUnderway = false;
+
         return props;
     }
 
