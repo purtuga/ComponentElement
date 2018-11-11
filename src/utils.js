@@ -1,9 +1,8 @@
 import objectExtend from "common-micro-libs/src/jsutils/objectExtend"
 import dataStore from "common-micro-libs/src/jsutils/dataStore"
-import objectWatchProp from "observables/src/objectWatchProp"
 import { isArray, objectKeys } from "common-micro-libs/src/jsutils/runtime-aliases"
 import {Symbol} from "common-micro-libs/src/jsutils/Symbol"
-
+import {Ev} from "./Ev.js";
 //============================================================================
 export const PRIVATE = dataStore.create();
 
@@ -21,6 +20,13 @@ export function elementHasAttributeForProp(ele, propDef) {
     return propDef.aliases.some(propAlias => ele.hasAttribute(propAlias));
 }
 
+/**
+ * Get the prop value from the possible HTML attributes (propName + aliases)
+ *
+ * @param ele
+ * @param propDef
+ * @returns {string}
+ */
 export function geAttributeValueForProp(ele, propDef) {
     let attrVal = "";
     propDef.aliases.some(propAlias => {
@@ -35,29 +41,14 @@ export function geAttributeValueForProp(ele, propDef) {
 export function getState(instance) {
     if (!PRIVATE.has(instance)) {
         let state = {
-            ready: false,           // We have all required params
-            readyWatcher: null,
-            props: instance.props,
+            isCssScopingDone: false,
+            templateEle: null,
+            ev: new Ev(),
             destroyCallbacks: [],
             destroyQueued: null,
-            isMounted: false,
-            hasTemplate: false // template has been inserted into component.$ui
+            isMounted: false
         };
 
-        // Create all props
-        const propDefintions    = getPropsDefinition(instance.constructor);
-        const required          = objectKeys(propDefintions).filter(propName => !propDefintions[propName]._isAlias && propDefintions[propName].required);
-        const setReadyState     = () => {
-            if (!required.length || required.every(propName => !!state.props[propName])) {
-                state.ready = true;
-            }
-            else {
-                state.ready = false;
-            }
-        };
-
-        required.forEach(propName => objectWatchProp(state.props, propName, setReadyState));
-        setReadyState();
         PRIVATE.set(instance, state);
     }
     return PRIVATE.get(instance);
@@ -103,19 +94,20 @@ export function getPropsDefinition(ComponentClass) {
     let state = getComponentClassState(ComponentClass);
 
     if (!state.propsDef) {
-        state.propsDef = {};
+        const statePropsDef = state.propsDef = {};
+        const componentPropsDef = ComponentClass.propsDef;
 
         // The props are stored internally (weakmap) once for the Component Class.
         // The internal definition has the "aliases" expanded as well.
-        if (ComponentClass.propsDef) {
-            objectKeys(ComponentClass.propsDef).forEach(propName => {
-                state.propsDef[propName] = ComponentClass.propsDef[propName];
+        if (componentPropsDef) {
+            objectKeys(componentPropsDef).forEach(propName => {
+                statePropsDef[propName] = componentPropsDef[propName];
                 // expand aliases as well
-                if (isArray(state.propsDef[propName].aliases)) {
-                    const propAliasDef = objectExtend({}, ComponentClass.propsDef[propName], { _isAlias: true });
-                    state.propsDef[propName].aliases.forEach(
-                        propNameAlias => !state.propsDef[propNameAlias] &&
-                                        (state.propsDef[propNameAlias] = propAliasDef));
+                if (isArray(statePropsDef[propName].aliases)) {
+                    const propAliasDef = objectExtend({}, componentPropsDef[propName], { _isAlias: true });
+                    statePropsDef[propName].aliases.forEach(
+                        propNameAlias => !statePropsDef[propNameAlias] &&
+                                        (statePropsDef[propNameAlias] = propAliasDef));
                 }
             });
         }
@@ -142,41 +134,4 @@ export function getComponentClassState(ComponentClass) {
     return PRIVATE.get(ComponentClass);
 }
 
-/**
- * Returns a clone of the Class's template - ready to be used/inserted
- * into a instance of the class
- *
- * @param {ComponentElement} componentInstance
- *
- * @return {HTMLElement}
- */
-export function getComponentInstanceTemplate(componentInstance) {
-    return componentInstance.ownerDocument.importNode(
-        getComponentTemplate(componentInstance.constructor).content,
-        true
-    );
-}
-
-/**
- * Returns a `HTMLTemplateElement` that holds the ComponentElement's template
- *
- * @param {ComponentElement} Component
- *  The ComponentElement class
- *
- * @return {HTMLTemplateElement}
- */
-export function getComponentTemplate(Component) {
-    if ("string" === typeof Component.template) {
-        const classState = getComponentClassState(Component);
-
-        if (!classState.template) {
-            classState.template = document.createElement("template");
-            classState.template.innerHTML = Component.template;
-        }
-
-        return classState.template;
-    }
-
-    return Component.template;
-}
 

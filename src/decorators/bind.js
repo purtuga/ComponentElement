@@ -1,34 +1,53 @@
-import {objectDefineProperty} from "common-micro-libs/src/jsutils/runtime-aliases";
-
+import {defineProperty} from "common-micro-libs/src/jsutils/runtime-aliases";
+import {throwIfThisIsPrototype} from "common-micro-libs/src/jsutils/throwIfThisIsPrototype.js"
 /**
- * Binds the given attributes to the Class instance on first `get`.
+ * Binds the given method to the Class instance on first `get`.
  *
  * @return {Function|Object}
  */
-export function bind(Proto, prop, descriptor) {
-    if (Proto && prop && descriptor && "function" === typeof descriptor.value) {
-        const propFn = descriptor.value;
-        const writable = descriptor.writable;
+export function bind(options) {
+    if (options.key && options.kind) {
+        return _bound(options);
+    }
+    return _bound;
+}
+
+function _bound(decoratorDescriptor) {
+    const {kind, key, descriptor} = decoratorDescriptor;
+    if (kind === "method" && descriptor.value) {
+        let isDoingLazySetup = false; // Fuck you IE!
+        const method = descriptor.value;
+
         delete descriptor.value;
         delete descriptor.writable;
 
         descriptor.get = function () {
-            if (this[`__settingUp:${prop}`]) {
+            throwIfThisIsPrototype(this);
+
+            if (isDoingLazySetup) {
                 return;
             }
-            this[`__settingUp:${prop}`] = true; // Fuck you IE!
+            isDoingLazySetup = true;
 
-            const fn = propFn.bind(this);
-            objectDefineProperty(this, prop, {
-                configurable: descriptor.configurable,
-                enumerable: descriptor.enumerable,
-                writable: writable,
-                value: fn
-            });
-            delete this[`__settingUp:${prop}`];
-            return fn;
-        };
-        return descriptor;
+            const boundMethod = method.bind(this);
+            defineProperty(this, key, boundMethod);
+            isDoingLazySetup = false;
+
+            return boundMethod;
+        }
     }
-    return bind; // for when called explicitly with no params: `bind()`
+
+    return decoratorDescriptor;
+
+    // {
+    //     "kind": "method",
+    //     "key": "private",
+    //     "placement": "prototype",
+    //     "descriptor": {
+    //         "writable": true,
+    //         "configurable": true,
+    //         "enumerable": false,
+    //         "value": function(){}
+    //     }
+    // }
 }
