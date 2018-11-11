@@ -3,6 +3,7 @@
     "version": "2.0.0-beta.1",
     "description": "A Custom Element based component to build widgets for the web (not frameworks)",
     "main": "src/index.js",
+    "module": "dist/component-element.esm.min.js",
     "scripts": {
         "serve": "webpack-dev-server --config node_modules/project-base/configs/webpack.config.js --progress --hot --color --entry ./my.dev/index.js",
         "serve:test": "webpack-dev-server --config node_modules/project-base/configs/webpack.config.js --entry ./test/index.js --output-path ./my.dev --output-filename test.bundle.js",
@@ -35,6 +36,10 @@
         "type": "git",
         "url": "git+https://github.com/purtuga/ComponentElement.git"
     },
+    "files": [
+        "dist/**",
+        "src/**"
+    ],
     "keywords": [
         "CustomElement",
         "component",

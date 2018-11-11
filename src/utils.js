@@ -134,41 +134,4 @@ export function getComponentClassState(ComponentClass) {
     return PRIVATE.get(ComponentClass);
 }
 
-/**
- * Returns a clone of the Class's template - ready to be used/inserted
- * into a instance of the class
- *
- * @param {ComponentElement} componentInstance
- *
- * @return {HTMLElement}
- */
-export function getComponentInstanceTemplate(componentInstance) {
-    return componentInstance.ownerDocument.importNode(
-        getComponentTemplate(componentInstance.constructor).content,
-        true
-    );
-}
-
-/**
- * Returns a `HTMLTemplateElement` that holds the ComponentElement's template
- *
- * @param {ComponentElement} Component
- *  The ComponentElement class
- *
- * @return {HTMLTemplateElement}
- */
-export function getComponentTemplate(Component) {
-    if ("string" === typeof Component.template) {
-        const classState = getComponentClassState(Component);
-
-        if (!classState.template) {
-            classState.template = document.createElement("template");
-            classState.template.innerHTML = Component.template;
-        }
-
-        return classState.template;
-    }
-
-    return Component.template;
-}
 
