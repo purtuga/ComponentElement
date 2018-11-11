@@ -3,7 +3,7 @@ import dataStore from "common-micro-libs/src/jsutils/dataStore"
 // import objectWatchProp from "observables/src/objectWatchProp"// FIXME: cleanup
 import { isArray, objectKeys } from "common-micro-libs/src/jsutils/runtime-aliases"
 import {Symbol} from "common-micro-libs/src/jsutils/Symbol"
-
+import {Ev} from "./Ev.js";
 //============================================================================
 export const PRIVATE = dataStore.create();
 
@@ -44,13 +44,18 @@ export function getState(instance) {
         let state = {
             isCssScopingDone: false,
             templateEle: null,
-            ready: false,           // We have all required params
-            readyWatcher: null,
-            props: instance.props,
+            ev: new Ev(),
+
+
+
+            // ready: false,           // We have all required params
+            // readyWatcher: null,
+            // props: instance.props,
             destroyCallbacks: [],
             destroyQueued: null,
-            isMounted: false,
-            hasTemplate: false // template has been inserted into component.$ui
+            isMounted: false
+            // ,
+            // hasTemplate: false // template has been inserted into component.$ui
         };
 
         // FIXME: cleanup

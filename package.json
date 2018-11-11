@@ -51,8 +51,7 @@
         "decorators-legacy": true
     },
     "dependencies": {
-        "common-micro-libs": "github:purtuga/common-micro-libs#master",
-        "observables": "github:purtuga/observables"
+        "common-micro-libs": "github:purtuga/common-micro-libs#master"
     },
     "devDependencies": {
         "project-base": "github:purtuga/project-base#beta/v2.0.0"

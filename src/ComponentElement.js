@@ -3,12 +3,12 @@ import {nextTick} from "common-micro-libs/src/jsutils/nextTick.js"
 import {throwIfThisIsPrototype} from "common-micro-libs/src/jsutils/throwIfThisIsPrototype.js"
 import {
     objectKeys,
-    objectDefineProperty,
+    // objectDefineProperty,  // FIXME: cleanup
     defineProperty,
     consoleWarn,
     head
 } from "common-micro-libs/src/jsutils/runtime-aliases"
-import {objectWatchProp} from "observables/src/objectWatchProp"
+// import {objectWatchProp} from "observables/src/objectWatchProp" // FIXME: cleanup
 import domAddEventListener from "common-micro-libs/src/domutils/domAddEventListener"
 import domFind from "common-micro-libs/src/domutils/domFind"
 import {
@@ -30,6 +30,7 @@ const SHADOW_DOM_SUPPORTED = head.createShadowRoot || head.attachShadow;
 const EV_DEFAULT_INIT = { bubbles: true, cancelable: true, composed: true };
 const CE_REGISTRY = window.customElements;
 const PROPS_NOOP = Object.freeze(Object.create(null));
+const EVENT_ANY = Symbol("ev.props.any");
 let lazySetupUnderway = false;
 
 /**
@@ -171,16 +172,21 @@ export class ComponentElement extends HTMLElement {
     get props() {
         throwIfThisIsPrototype(this);
 
-        if (this._$props) {
-            return this._$props;
+        if (lazySetupUnderway) {
+            return undefined;
         }
+
+
 
         // On first call - setup the property on the instance
         const propDefinitions = getPropsDefinition(this.constructor);
         let props = {};
+        const ev = getState(this).ev;
+        const notifyAnyListeners = () => ev.emit(EVENT_ANY);
 
         objectKeys(propDefinitions).forEach(propName => {
             if (!propDefinitions[propName] || !propDefinitions[propName]._isAlias) {
+                const notifyPropListeners = () => ev.emit(propName);
                 let propValue = propDefinitions[propName].default.call(this);
 
                 if (
@@ -196,21 +202,27 @@ export class ComponentElement extends HTMLElement {
                     delete this[propName]; // this sets functionality back to the getter/setter.
                 }
 
-                objectDefineProperty(props, propName, {
-                    configurable: true,
-                    enumerable: true,
-                    get() {
+                // FIXME: convert this call to defineProperty()
+                defineProperty(
+                    props,
+                    propName,
+                    undefined,
+                    function getProp () {
                         return propValue;
                     },
-                    set: newValue => {
+                    newValue => {
                         newValue = propDefinitions[propName].filter.call(this, newValue);
+                        nextTick.queue(notifyPropListeners);
+                        nextTick.queue(notifyAnyListeners);
                         return propValue = newValue;
-                    }
-                });
+                    },
+                    true,
+                    true
+                );
             }
         });
 
-        objectDefineProperty(this, "_$props", { value: props });
+        defineProperty(this, "props", props, undefined, undefined, true, true, false);
         return props;
     }
 
@@ -526,10 +538,11 @@ export class ComponentElement extends HTMLElement {
      * @param {String} [propName]
      *  Optional. The specific prop to watch.
      *
-     * @return {ObjectUnwatchProp}
+     * @return {Function}
      */
     onPropsChange(callback, propName) {
-        return objectWatchProp(this.props, propName, callback);
+        return getState(this).ev.on(propName || EVENT_ANY, callback);
+        // return objectWatchProp(this.props, propName, callback); // FIXME: cleanup
     }
 
     //~~~~~~~~~~~~~~~~~~~~~~ NATIVE METHODS ~~~~~~~~~~~~~~~~~~~~~~
