@@ -21,8 +21,8 @@ import {
     geAttributeValueForProp
 } from "./utils"
 import {
-    prepareComponentTemplate,
-    styleComponentInstanceElement
+    styleComponentInstanceElement,
+    prepareRenderedContent
 } from "./polyfill-support"
 
 //============================================================================
@@ -69,14 +69,13 @@ export class ComponentElement extends HTMLElement {
     static define(name) {
         name = name || this.tagName;
 
-        prepareComponentTemplate(this, name);
-
         if (CE_REGISTRY.get(name)) {
             if (CE_REGISTRY.get(name) !== this) {
                 consoleWarn(`${name} is already a defined in customElementsRegistry as a different Class`);
             }
             return;
         }
+
         CE_REGISTRY.define(name, this);
     }
 
@@ -332,6 +331,11 @@ export class ComponentElement extends HTMLElement {
         return _update;
     }
 
+    /**
+     * An instance bound method used to queue the render update cycle
+     * @type Function
+     * @private
+     */
     get _queueUpdate() {
         throwIfThisIsPrototype(this);
 
@@ -352,19 +356,23 @@ export class ComponentElement extends HTMLElement {
 
     /**
      * Handles the render output - which normally means flush it ot DOM.
-     * Override for different rendere libraries
+     * Override for different render libraries
      *
      * @param renderOutput
      * @private
      */
     _setView(renderOutput) {
+        let view = prepareRenderedContent(renderOutput, this) || renderOutput;
+
         // If it looks like html, then use innerHTML
-        if ("string" === typeof renderOutput) {
-            this.$ui.innerHTML = renderOutput;
+        if ("string" === typeof view) {
+            this.$ui.innerHTML = view;
         } else {
             this.$ui.textContent = "";
-            this.$ui.appendChild(renderOutput);
+            this.$ui.appendChild(view);
         }
+
+        styleComponentInstanceElement(this);
     }
 
     //--------------------------------------------------------------
@@ -421,7 +429,10 @@ export class ComponentElement extends HTMLElement {
     willRender() {}
 
     /**
-     * Render the Component's content
+     * Render the Component's content.
+     *
+     * __IMPORTANT__: Note that by default, this view handler (`_setView`) does not support
+     * dynamic styles in polyfilled environments. Styles will be scooped only on first render.
      *
      * @return {HTMLElement|DocumentFragment}
      */
@@ -533,8 +544,6 @@ export class ComponentElement extends HTMLElement {
     }
 
     connectedCallback() {
-        styleComponentInstanceElement(this); // FIXME: is this the right time to call polyfill styling?
-
         const state = getState(this);
 
         if (state.destroyQueued) {

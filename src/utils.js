@@ -1,6 +1,6 @@
 import objectExtend from "common-micro-libs/src/jsutils/objectExtend"
 import dataStore from "common-micro-libs/src/jsutils/dataStore"
-import objectWatchProp from "observables/src/objectWatchProp"
+// import objectWatchProp from "observables/src/objectWatchProp"// FIXME: cleanup
 import { isArray, objectKeys } from "common-micro-libs/src/jsutils/runtime-aliases"
 import {Symbol} from "common-micro-libs/src/jsutils/Symbol"
 
@@ -42,6 +42,8 @@ export function geAttributeValueForProp(ele, propDef) {
 export function getState(instance) {
     if (!PRIVATE.has(instance)) {
         let state = {
+            isCssScopingDone: false,
+            templateEle: null,
             ready: false,           // We have all required params
             readyWatcher: null,
             props: instance.props,
@@ -51,20 +53,23 @@ export function getState(instance) {
             hasTemplate: false // template has been inserted into component.$ui
         };
 
-        // Create all props
-        const propDefintions    = getPropsDefinition(instance.constructor);
-        const required          = objectKeys(propDefintions).filter(propName => !propDefintions[propName]._isAlias && propDefintions[propName].required);
-        const setReadyState     = () => {
-            if (!required.length || required.every(propName => !!state.props[propName])) {
-                state.ready = true;
-            }
-            else {
-                state.ready = false;
-            }
-        };
+        // FIXME: cleanup
 
-        required.forEach(propName => objectWatchProp(state.props, propName, setReadyState));
-        setReadyState();
+        // Create all props
+        // const propDefintions    = getPropsDefinition(instance.constructor);
+        // const required          = objectKeys(propDefintions).filter(propName => !propDefintions[propName]._isAlias && propDefintions[propName].required);
+        // const setReadyState     = () => {
+        //     if (!required.length || required.every(propName => !!state.props[propName])) {
+        //         state.ready = true;
+        //     }
+        //     else {
+        //         state.ready = false;
+        //     }
+        // };
+        //
+        // required.forEach(propName => objectWatchProp(state.props, propName, setReadyState));
+        // setReadyState();
+
         PRIVATE.set(instance, state);
     }
     return PRIVATE.get(instance);
@@ -110,19 +115,20 @@ export function getPropsDefinition(ComponentClass) {
     let state = getComponentClassState(ComponentClass);
 
     if (!state.propsDef) {
-        state.propsDef = {};
+        const statePropsDef = state.propsDef = {};
+        const componentPropsDef = ComponentClass.propsDef;
 
         // The props are stored internally (weakmap) once for the Component Class.
         // The internal definition has the "aliases" expanded as well.
-        if (ComponentClass.propsDef) {
-            objectKeys(ComponentClass.propsDef).forEach(propName => {
-                state.propsDef[propName] = ComponentClass.propsDef[propName];
+        if (componentPropsDef) {
+            objectKeys(componentPropsDef).forEach(propName => {
+                statePropsDef[propName] = componentPropsDef[propName];
                 // expand aliases as well
-                if (isArray(state.propsDef[propName].aliases)) {
-                    const propAliasDef = objectExtend({}, ComponentClass.propsDef[propName], { _isAlias: true });
-                    state.propsDef[propName].aliases.forEach(
-                        propNameAlias => !state.propsDef[propNameAlias] &&
-                                        (state.propsDef[propNameAlias] = propAliasDef));
+                if (isArray(statePropsDef[propName].aliases)) {
+                    const propAliasDef = objectExtend({}, componentPropsDef[propName], { _isAlias: true });
+                    statePropsDef[propName].aliases.forEach(
+                        propNameAlias => !statePropsDef[propNameAlias] &&
+                                        (statePropsDef[propNameAlias] = propAliasDef));
                 }
             });
         }

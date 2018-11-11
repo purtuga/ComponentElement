@@ -290,4 +290,143 @@ describe("ComponentElement", function () {
             });
         });
     });
+
+    describe("Props support", function () {
+        beforeEach(function () {
+            this.playground = document.createElement("div");
+            this.playground.setAttribute("style", "position:absolute;bottom: 10px; right: 10px;");
+            document.body.appendChild(this.playground);
+
+            this.EleClass = class extends ComponentElement {
+                static tagName = generateTagName();
+                static delayDestroy = 2;
+
+                @prop propOne;
+                @prop propTwo = "prop two value";
+
+                @prop({ attr: true }) propThree;
+                @prop({ attr: true }) propFour = "prop four value";
+
+                render() {
+                    return `
+<div id="propOne">${this.props.propOne || ""}</div>
+<div id="propTwo">${this.props.propTwo || ""}</div>
+<div id="propThree">${this.props.propThree || ""}</div>
+<div id="propFour">${this.props.propFour || ""}</div>
+`;
+                }
+            };
+            this.EleClass.define();
+
+            this.ele = document.createElement(this.EleClass.tagName);
+            this.playground.appendChild(this.ele);
+        });
+
+        afterEach(function () {
+            if (this.playground && this.playground.parentNode) {
+                this.playground.parentNode.removeChild(this.playground);
+            }
+        });
+
+        it("should render with default props", function () {
+            return delay()
+                .then(() => {
+                    expect(this.ele.$("#propOne").textContent , "propOne DOM value check failed").to.be.empty;
+                    expect(this.ele.$("#propTwo").textContent, "propTwo DOM Value check failed").to.equal("prop two value");
+                    expect(this.ele.$("#propThree").textContent, "propThree DOM value check failed").to.be.empty;
+                    expect(this.ele.$("#propFour").textContent, "propFour DOM value check failed").to.equal("prop four value");
+                });
+        });
+
+        it("should proxy html attributes to props", function () {
+            return delay()
+                .then(() => {
+                    this.ele.setAttribute("propThree", "Three value updated!");
+                    this.ele.setAttribute("propFour", "Four value updated!");
+
+                    expect(this.ele.props.propThree).to.equal("Three value updated!");
+                    expect(this.ele.props.propFour).to.equal("Four value updated!");
+
+                    return delay();
+                })
+                .then(() => {
+                    expect(this.ele.$("#propThree").textContent, "propThree DOM value check failed").to.be.equal("Three value updated!");
+                    expect(this.ele.$("#propFour").textContent, "propFour DOM value check failed").to.equal("Four value updated!");
+                });
+        });
+
+        it("should support prop aliases via html attribute", function () {
+            return delay()
+                .then(() => {
+                    // kebob casing alias
+                    this.ele.setAttribute("prop-three", "Three value updated!");
+                    this.ele.setAttribute("prop-four", "Four value updated!");
+
+                    expect(this.ele.props.propThree).to.equal("Three value updated!");
+                    expect(this.ele.props.propFour).to.equal("Four value updated!");
+
+                    return delay();
+                })
+                .then(() => {
+                    expect(this.ele.$("#propThree").textContent, "propThree DOM value check failed").to.be.equal("Three value updated!");
+                    expect(this.ele.$("#propFour").textContent, "propFour DOM value check failed").to.equal("Four value updated!");
+
+                    this.ele.removeAttribute("prop-three");
+                    this.ele.removeAttribute("prop-four");
+
+                    return delay();
+                })
+                .then(() => {
+                    expect(this.ele.props.propThree).to.be.null
+                    expect(this.ele.props.propFour).to.be.null;
+
+                    // All lowercase alias
+                    this.ele.setAttribute("propthree", "Three 2 value updated!");
+                    this.ele.setAttribute("propfour", "Four 2 value updated!");
+
+                    expect(this.ele.props.propThree).to.equal("Three 2 value updated!");
+                    expect(this.ele.props.propFour).to.equal("Four 2 value updated!");
+                });
+        });
+
+        it("should proxy instance props", function () {
+            return delay()
+                .then(() => {
+                    this.ele.propOne = "One value updated!";
+                    this.ele.propTwo = "Two value updated!";
+
+                    expect(this.ele.props.propOne).to.equal("One value updated!");
+                    expect(this.ele.props.propTwo).to.equal("Two value updated!");
+
+                    return delay();
+                })
+                .then(() => {
+                    expect(this.ele.$("#propOne").textContent, "propOne DOM value check failed").to.be.equal("One value updated!");
+                    expect(this.ele.$("#propTwo").textContent, "propTwo DOM value check failed").to.equal("Two value updated!");
+                });
+        });
+
+
+        it("should support prop aliases via instance props", function () {
+            return delay()
+                .then(() => {
+                    this.ele["prop-one"] = "One value updated!";
+                    this.ele["prop-two"] = "Two value updated!";
+
+                    expect(this.ele.props.propOne).to.equal("One value updated!");
+                    expect(this.ele.props.propTwo).to.equal("Two value updated!");
+
+                    return delay();
+                })
+                .then(() => {
+                    expect(this.ele.$("#propOne").textContent, "propOne DOM value check failed").to.be.equal("One value updated!");
+                    expect(this.ele.$("#propTwo").textContent, "propTwo DOM value check failed").to.equal("Two value updated!");
+                });
+        });
+
+        it("should handle boolean attributes", function () {
+            expect(true).to.be.false; // FIXME: finish test: handle boolean attributes
+        });
+
+    });
 });

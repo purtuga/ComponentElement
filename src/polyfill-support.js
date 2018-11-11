@@ -2,28 +2,64 @@
 // Utilities to work with polyfills like ShadyCSS
 //--------------------------------------------------------------
 import {GLOBAL} from "common-micro-libs/src/jsutils/getGlobal"
-import {getComponentTemplate} from "./utils"
+import {domFind} from "common-micro-libs/src/domutils/domFind.js"
+import {getState} from "./utils"
 
 //===========================================================================================
-const supportsShadyCSS = () => !!GLOBAL.ShadyCSS;
-
-// FIXME: code below should check also for native support for CEs (protect against polyfills loaded in a native env?)
+const removeElement = ele => ele.parentNode.removeChild(ele);
+export const supportsShadyCSS = () => !!GLOBAL.ShadyCSS;
 
 /**
- * Prepares the component's styles for the given `define` tag name.
- * Method should be called at the time the Element is registered into CustomElementsRegistry
+ * Scopes the CSS of a given template for the Component by using ShadyCSS.
  *
- * @param {ComponentElement} Component
- * @param {String} tagName
+ * @param template
+ * @param eleInstance
  */
-export function prepareComponentTemplate(Component, tagName){
-    // FIXME: need additional checks here. ONly use shady if ShadowDom is not supported natively.
-    //              need to use: ShadyCSS.nativeShadow to check if shadowroot is supported
-    //              Also: should we check the Component's "useShadow" property?
+export function scopeCss (template, eleInstance) {
     if (supportsShadyCSS()) {
-        GLOBAL.ShadyCSS.prepareTemplate(getComponentTemplate(Component), tagName);
+        GLOBAL.ShadyCSS.prepareTemplate(template, eleInstance.constructor.tagName);
     }
 }
+
+/**
+ * Prepares the rendered content by removing style elements - since they were sopped
+ * during `scopeCss`
+ *
+ * @param renderedContent
+ * @param componentInstance
+ */
+export function prepareRenderedContent(renderOutput, eleInstance) {
+    if (supportsShadyCSS()) {
+        const state = getState(eleInstance);
+
+        if (!state.templateEle) {
+            state.templateEle = document.createElement("template");
+        }
+
+        state.templateEle.innerHTML = "";
+
+        // TODO: any momoization can happen here?
+
+        if ("string" === typeof renderOutput) {
+            state.templateEle.innerHTML = renderOutput;
+        } else {
+            state.templateEle.appendChild(renderOutput);
+        }
+
+        if (!state.isCssScopingDone) {
+            state.isCssScopingDone = true;
+            scopeCss(state.templateEle, eleInstance)
+        }
+
+        const view = document.importNode(state.templateEle.content, true);
+        state.templateEle.textContent = "";
+
+        // Remove <style> element
+        domFind(view, "style").forEach(removeElement);
+        return view;
+    }
+}
+
 
 /**
  * Styles the instance of a custom element using ShadyCSS
