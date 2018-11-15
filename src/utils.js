@@ -5,7 +5,6 @@ import {Symbol} from "@purtuga/common/src/jsutils/Symbol"
 import {Ev} from "./Ev.js";
 //============================================================================
 export const PRIVATE = dataStore.create();
-
 export const STATE_SYMBOL = Symbol("state");
 
 /**
@@ -127,7 +126,7 @@ export function getComponentClassState(ComponentClass) {
     if (!PRIVATE.has(ComponentClass)) {
         PRIVATE.set(ComponentClass, {
             propsDef: null,
-            template: null,
+            templateEle: null,
             observedAttrs: null
         });
     }

@@ -3,11 +3,13 @@
 //--------------------------------------------------------------
 import {GLOBAL} from "@purtuga/common/src/jsutils/getGlobal"
 import {domFind} from "@purtuga/common/src/domutils/domFind.js"
-import {getState} from "./utils"
+import {createElement} from "@purtuga/common/src/jsutils/runtime-aliases.js"
+import {getComponentClassState} from "./utils.js"
 
 //===========================================================================================
-const removeElement = ele => ele.parentNode.removeChild(ele);
 export const supportsShadyCSS = () => !!GLOBAL.ShadyCSS;
+const removeElement = ele => ele.parentNode.removeChild(ele);
+const isString = s => "string" === typeof s;
 
 /**
  * Scopes the CSS of a given template for the Component by using ShadyCSS.
@@ -27,32 +29,46 @@ export function scopeCss (template, eleInstance) {
  *
  * @param renderedContent
  * @param componentInstance
+ *
+ * @return {HTMLElement|DocumentFragment}
  */
 export function prepareRenderedContent(renderOutput, eleInstance) {
     if (supportsShadyCSS()) {
-        const state = getState(eleInstance);
+        const isRenderOutputString = isString(renderOutput);
+        const ComponentClassState = getComponentClassState(eleInstance.constructor);
+        let {templateEle} = ComponentClassState;
+        let view;
 
-        if (!state.templateEle) {
-            state.templateEle = document.createElement("template");
+        // If Styles have not yet been scoped in the HEAD of the element for this CE Class,
+        // then do it now this occurs only once per Component.
+        if (!templateEle) {
+            ComponentClassState.templateEle = templateEle = createElement("template");
+            if (isRenderOutputString) {
+                templateEle.innerHTML = renderOutput;
+            } else {
+                templateEle.appendChild(renderOutput.cloneNode(true));
+            }
+            scopeCss(templateEle , eleInstance);
         }
 
-        state.templateEle.innerHTML = "";
+        // If the input was a string, then get a document fragment out of it
+        if (isRenderOutputString) {
+            templateEle.innerHTML = renderOutput;
+            view = document.importNode(templateEle.content, true);
+            templateEle.textContent = "";
+        } else {
+            view = renderOutput;
+        }
+
+        // Need to prepare this DOM by calling ShadyCSS.prepareTemplateDom so
+        // that scoping classes are applied
+        if (!view.content) {
+            view.content = view;
+        }
+
+        GLOBAL.ShadyCSS.prepareTemplateDom(view, eleInstance.constructor.tagName);
 
         // TODO: any momoization can happen here?
-
-        if ("string" === typeof renderOutput) {
-            state.templateEle.innerHTML = renderOutput;
-        } else {
-            state.templateEle.appendChild(renderOutput);
-        }
-
-        if (!state.isCssScopingDone) {
-            state.isCssScopingDone = true;
-            scopeCss(state.templateEle, eleInstance)
-        }
-
-        const view = document.importNode(state.templateEle.content, true);
-        state.templateEle.textContent = "";
 
         // Remove <style> element
         domFind(view, "style").forEach(removeElement);

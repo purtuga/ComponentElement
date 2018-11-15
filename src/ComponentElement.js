@@ -380,8 +380,6 @@ export class ComponentElement extends HTMLElement {
             this.$ui.textContent = "";
             this.$ui.appendChild(view);
         }
-
-        styleComponentInstanceElement(this);
     }
 
     //--------------------------------------------------------------
@@ -547,6 +545,7 @@ export class ComponentElement extends HTMLElement {
             state.destroyQueued = null;
         }
 
+        styleComponentInstanceElement(this);
         state.isMounted = true;
         this.didMount();
         this._queueUpdate();
