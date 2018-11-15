@@ -19,7 +19,8 @@ import {
 } from "./utils"
 import {
     styleComponentInstanceElement,
-    prepareRenderedContent
+    prepareRenderedContent,
+    supportsNativeShadowDom
 } from "./polyfill-support"
 
 //============================================================================
@@ -371,7 +372,11 @@ export class ComponentElement extends HTMLElement {
      * @private
      */
     _setView(renderOutput) {
-        let view = prepareRenderedContent(renderOutput, this) || renderOutput;
+        let view = renderOutput;
+
+        if (!supportsNativeShadowDom()) {
+            view = prepareRenderedContent(renderOutput, this) || renderOutput;
+        }
 
         // If it looks like html, then use innerHTML
         if ("string" === typeof view) {
@@ -435,7 +440,7 @@ export class ComponentElement extends HTMLElement {
      * __IMPORTANT__: Note that by default, this view handler (`_setView`) does not support
      * dynamic styles in polyfilled environments. Styles will be scooped only on first render.
      *
-     * @return {HTMLElement|DocumentFragment}
+     * @return {String|HTMLElement|DocumentFragment}
      */
     render(){}
 
@@ -545,7 +550,10 @@ export class ComponentElement extends HTMLElement {
             state.destroyQueued = null;
         }
 
-        styleComponentInstanceElement(this);
+        if (!supportsNativeShadowDom()) {
+            styleComponentInstanceElement(this);
+        }
+
         state.isMounted = true;
         this.didMount();
         this._queueUpdate();

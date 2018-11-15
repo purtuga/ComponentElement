@@ -3,13 +3,22 @@
 //--------------------------------------------------------------
 import {GLOBAL} from "@purtuga/common/src/jsutils/getGlobal"
 import {domFind} from "@purtuga/common/src/domutils/domFind.js"
-import {createElement} from "@purtuga/common/src/jsutils/runtime-aliases.js"
+import {createElement, head} from "@purtuga/common/src/jsutils/runtime-aliases.js"
 import {getComponentClassState} from "./utils.js"
 
 //===========================================================================================
 export const supportsShadyCSS = () => !!GLOBAL.ShadyCSS;
 const removeElement = ele => ele.parentNode.removeChild(ele);
 const isString = s => "string" === typeof s;
+
+/**
+ * if runtime env. supports shadowRoot
+ * @returns {boolean}
+ */
+export function supportsNativeShadowDom() {
+    return (head.createShadowRoot || head.attachShadow) &&
+        (!supportsShadyCSS() || GLOBAL.ShadyCSS.nativeShadow)
+}
 
 /**
  * Scopes the CSS of a given template for the Component by using ShadyCSS.
@@ -62,10 +71,11 @@ export function prepareRenderedContent(renderOutput, eleInstance) {
 
         // Need to prepare this DOM by calling ShadyCSS.prepareTemplateDom so
         // that scoping classes are applied
-        if (!view.content) {
+        if (!view.content) { // FIXME: should use isTemplate()
             view.content = view;
         }
 
+        // FIXME: this is dangerous because it expects a certain internal implementation in prepareTemplateDom()
         GLOBAL.ShadyCSS.prepareTemplateDom(view, eleInstance.constructor.tagName);
 
         // TODO: any momoization can happen here?
