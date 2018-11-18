@@ -368,8 +368,8 @@ export class ComponentElement extends HTMLElement {
      * Handles the render output - which normally means flush it ot DOM.
      * Override for different render libraries
      *
+     * @protected
      * @param renderOutput
-     * @private
      */
     _setView(renderOutput) {
         let view = renderOutput;
