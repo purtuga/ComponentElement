@@ -1,8 +1,9 @@
 import objectExtend from "@purtuga/common/src/jsutils/objectExtend"
 import dataStore from "@purtuga/common/src/jsutils/dataStore"
+import {Ev} from "@purtuga/common/src/jsutils/Ev"
 import { isArray, objectKeys } from "@purtuga/common/src/jsutils/runtime-aliases"
 import {Symbol} from "@purtuga/common/src/jsutils/Symbol"
-import {Ev} from "./Ev.js";
+
 //============================================================================
 export const PRIVATE = dataStore.create();
 export const STATE_SYMBOL = Symbol("state");
