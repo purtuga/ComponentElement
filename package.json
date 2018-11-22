@@ -53,7 +53,7 @@
     },
     "homepage": "https://github.com/purtuga/ComponentElement#readme",
     "dependencies": {
-        "@purtuga/common": "^3.0.0"
+        "@purtuga/common": "^3.3.0"
     },
     "devDependencies": {
         "@purtuga/project-base": "^2.0.0"

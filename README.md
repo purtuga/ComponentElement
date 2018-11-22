@@ -59,11 +59,11 @@ Include a [polyfill](https://www.webcomponents.org/polyfills) prior to any web c
 <head>
     <script>
         if (!("Promise" in window)) {
-            document.write('<' + 'script src="/' + '/cdnjs.cloudflare.com/ajax/libs/core-js/2.5.3/core.min.js"></' + 'script>');
+            document.write('<' + 'script src="/' + '/unpkg.com/core-js@^2/client/core.min.js"></' + 'script>');
             console.log("core-js requested");
         }
         if (!('customElements' in window)) {
-            document.write('<' + 'script src="/' + '/cdnjs.cloudflare.com/ajax/libs/webcomponentsjs/2.0.2/webcomponents-bundle.js"></' + 'script>');
+            document.write('<' + 'script src="/' + '/unpkg.com/@webcomponents/webcomponentsjs@^2"></' + 'script>');
             console.log("CE pollyfill requested");
         }
     </script>
