@@ -1,6 +1,6 @@
 {
     "name": "@purtuga/component-element",
-    "version": "2.0.3",
+    "version": "2.1.0",
     "description": "A Custom Element based component to build widgets for the web (not frameworks)",
     "main": "src/index.js",
     "module": "dist/component-element.esm.min.js",
