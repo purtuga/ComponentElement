@@ -442,7 +442,7 @@ export class ComponentElement extends HTMLElement {
      *
      * @return {String|HTMLElement|DocumentFragment}
      */
-    render(){}
+    render(){ return `<span></span>`; }
 
     /**
      * Component has been rendered and dates flushed to DOM
