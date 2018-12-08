@@ -1,4 +1,4 @@
-import objectExtend from "@purtuga/common/src/jsutils/objectExtend"
+import objectExtend from "@purtuga/common/src/jsutils/objectExtend.js"
 import {nextTick} from "@purtuga/common/src/jsutils/nextTick.js"
 import {throwIfThisIsPrototype} from "@purtuga/common/src/jsutils/throwIfThisIsPrototype.js"
 import {
@@ -6,9 +6,9 @@ import {
     defineProperty,
     consoleWarn,
     head
-} from "@purtuga/common/src/jsutils/runtime-aliases"
-import domAddEventListener from "@purtuga/common/src/domutils/domAddEventListener"
-import domFind from "@purtuga/common/src/domutils/domFind"
+} from "@purtuga/common/src/jsutils/runtime-aliases.js"
+import domAddEventListener from "@purtuga/common/src/domutils/domAddEventListener.js"
+import domFind from "@purtuga/common/src/domutils/domFind.js"
 import {
     getState,
     PRIVATE,
@@ -16,12 +16,12 @@ import {
     getComponentClassState,
     elementHasAttributeForProp,
     geAttributeValueForProp
-} from "./utils"
+} from "./utils.js"
 import {
     styleComponentInstanceElement,
     prepareRenderedContent,
     supportsNativeShadowDom
-} from "./polyfill-support"
+} from "./polyfill-support.js"
 
 //============================================================================
 const SHADOW_DOM_SUPPORTED = head.createShadowRoot || head.attachShadow;
@@ -37,7 +37,7 @@ let lazySetupUnderway = false;
  * @extends HTMLElement
  *
  */
-export class ComponentElement extends HTMLElement {
+class ComponentElement extends HTMLElement {
     constructor(...args) {
         const self = super(...args) || this;
         setupComponent(self);
@@ -179,11 +179,19 @@ export class ComponentElement extends HTMLElement {
         let props = {};
         const ev = getState(this).ev;
         const notifyAnyListeners = () => ev.emit(EVENT_ANY);
+        notifyAnyListeners._for = this;
+        notifyAnyListeners._ev = EVENT_ANY;
+
 
         objectKeys(propDefinitions).forEach(propName => {
             if (!propDefinitions[propName] || !propDefinitions[propName]._isAlias) {
-                const notifyPropListeners = () => ev.emit(propName);
                 let propValue = propDefinitions[propName].default.call(this);
+                const notifyPropListeners = () => ev.emit(propName);
+
+                notifyPropListeners._for = this;
+                notifyPropListeners._ev = propName;
+
+                // FIXME: Can this be more efficient? create just one prop notifier funciton and store list of props in an outer-scoped array?
 
                 if (
                     propDefinitions[propName].attr &&
@@ -198,7 +206,6 @@ export class ComponentElement extends HTMLElement {
                     delete this[propName]; // this sets functionality back to the getter/setter.
                 }
 
-                // FIXME: convert this call to defineProperty()
                 defineProperty(
                     props,
                     propName,
@@ -208,8 +215,13 @@ export class ComponentElement extends HTMLElement {
                     },
                     newValue => {
                         newValue = propDefinitions[propName].filter.call(this, newValue);
-                        nextTick.queue(notifyPropListeners);
-                        nextTick.queue(notifyAnyListeners);
+
+                        // Only schedule event notification is the component is mounted
+                        if (this.isMounted) {
+                            nextTick.queue(notifyPropListeners);
+                            nextTick.queue(notifyAnyListeners);
+                        }
+
                         return propValue = newValue;
                     },
                     true,
@@ -334,6 +346,7 @@ export class ComponentElement extends HTMLElement {
             }
         };
 
+        _update._for = this;
         lazySetupUnderway = true;
         defineProperty(this, "update", _update);
         lazySetupUnderway = false;
@@ -357,6 +370,7 @@ export class ComponentElement extends HTMLElement {
             nextTick.queue(this.update);
         };
 
+        __queueUpdate._for = this;
         lazySetupUnderway = true;
         defineProperty(this, "_queueUpdate", __queueUpdate);
         lazySetupUnderway = false;
@@ -556,7 +570,7 @@ export class ComponentElement extends HTMLElement {
 
         state.isMounted = true;
         this.didMount();
-        this._queueUpdate();
+        this.update();
     }
 
     disconnectedCallback() {
@@ -575,7 +589,6 @@ export class ComponentElement extends HTMLElement {
     }
 }
 
-export default ComponentElement;
 
 function setupComponent (component) {
     const { useShadow, shadowMode } = component.constructor;
@@ -591,56 +604,12 @@ function setupComponent (component) {
         component._$ui = component;
     }
 
-    component.onPropsChange(component._queueUpdate);
+    component.onPropsChange(component.update);
     component.didInit();
 }
 
-// function __setupComponent(component) {
-//     const state = getState(component);
-//     let lastReadyState = null;
-//     const handleReadyChanges = () => {
-//         if (lastReadyState === state.ready) {
-//             return;
-//         }
-//
-//         lastReadyState = state.ready;
-//
-//         if (state.ready) {
-//             if (!state.hasTemplate) {
-//                 // component._$ui.innerHTML = component.constructor.template;
-//                 component._$ui.appendChild(
-//                     component.constructor.renderTemplate(component)
-//                 );
-//                 state.hasTemplate = true;
-//             }
-//
-//             component.didMount();
-//
-//             if (state.isMounted) {
-//                 component.didMount();
-//             }
-//         }
-//         else if (state.hasTemplate) {
-//             component.unready();
-//         }
-//
-//     };
-//
-//     if (component.constructor.useShadow && SHADOW_DOM_SUPPORTED) {
-//         if (component.shadowRoot) {
-//             component._$ui = component.shadowRoot;
-//         }
-//         else {
-//             component._$ui = component.attachShadow({ mode: component.constructor.shadowMode });
-//         }
-//     }
-//     else {
-//         component._$ui = component;
-//     }
-//
-//     component.didInit();
-//
-//     state.readyWatcher = objectWatchProp(state, "ready", handleReadyChanges);
-//     component.onDestroy(state.readyWatcher);
-//     handleReadyChanges();
-// }
+//=======================================================================================
+//                                                               MODULE EXPORTS
+//=======================================================================================
+export default ComponentElement;
+export { ComponentElement }
