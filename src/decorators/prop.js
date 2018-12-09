@@ -1,5 +1,5 @@
 import objectExtend from "@purtuga/common/src/jsutils/objectExtend"
-import { defineProperty, consoleWarn} from "@purtuga/common/src/jsutils/runtime-aliases"
+import {defineProperty, removeAttribute, setAttribute } from "@purtuga/common/src/jsutils/runtime-aliases"
 import {throwIfThisIsPrototype} from "@purtuga/common/src/jsutils/throwIfThisIsPrototype"
 import {getKebabCase, elementHasAttributeForProp} from "../utils"
 
@@ -32,7 +32,10 @@ function _propDecorator(options, {key, initializer, descriptor}) {
 
     // Setup the aliases to proxy the values to the same `key`
     if (propDefinition.aliases) {
-        newDescriptor.extras = propDefinition.aliases.map(aliasName => getDecoratorDescriptor(aliasName, key));
+        newDescriptor.extras = propDefinition
+            .aliases
+            .filter(aliasName => aliasName !== key) // Skip the Key name, which is also in the list of aliases
+            .map(aliasName => getDecoratorDescriptor(aliasName, key));
     }
 
     return newDescriptor;
@@ -113,7 +116,7 @@ function getPropSetup(name, initializer, validator, propDef) {
      * @property {Boolean} boolean          Is the prop value meant to be a boolean (note: also forces `attr` to true)
      * @property {Function} default         Function that returns default value (the `getter` when decorator is used)
      * @property {Function} filter          Function that filters the value being set (the `setter` when decorator is used)
-     * @property {Array<String>} aliases    An array of aliases for the prop
+     * @property {Array<String>} aliases    An array of aliases for the prop, including the prop name itself
      */
     const propertyDefinition = objectExtend(
         {
@@ -123,7 +126,7 @@ function getPropSetup(name, initializer, validator, propDef) {
             boolean: false,
             default: initializer || NOOP,
             filter: validator || NOOP,
-            aliases: []
+            aliases: [ name ]
             // _isAlias: --- used in getPropsDefinition()
         },
         propDef
@@ -133,26 +136,25 @@ function getPropSetup(name, initializer, validator, propDef) {
     // redefine default adn filter values
     if (propertyDefinition.boolean) {
         propertyDefinition.attr = true;
-        propertyDefinition.default = propertyDefinition.filter = function () {
-            const response = elementHasAttributeForProp(this, propertyDefinition);
+        propertyDefinition.default = propertyDefinition.filter = function (newValue) {
+            const realHtmlPropValue = elementHasAttributeForProp(this, propertyDefinition);
 
-            // DEV MODE assistance
-            if (process.env.NODE_ENV !== "production") {
-                // when attempting to set a value that differs from
-                // element.hasAttribute() - show warning in console
-                if (
-                    arguments.length &&
-                    (
-                        Boolean("string" === typeof arguments[0]
-                            ? arguments[0] || 1
-                            : arguments[0]) !== response
-                    )
-                ) {
-                    consoleWarn(`'${this.constructor.name}#${name}|${propertyDefinition.aliases.join("|")}' prop is setup as a Boolean Attr and can only be set via HTML attribute!`);
+            // If called with a Boolean, then it must have been set via a instance prop,
+            // and thus its value takes precedence over HTML property. In this case, we
+            // reflect the value to the HTML prop - because in most cases, styles are
+            // driven boolean attributes
+            if ("boolean" === typeof newValue) {
+                if (realHtmlPropValue !== newValue) {
+                    if (newValue) {
+                        setAttribute(this, name, newValue);
+                    } else {
+                        removeAttribute(this, name);
+                    }
                 }
+                return newValue;
             }
 
-            return response;
+            return realHtmlPropValue;
         }
     }
 
