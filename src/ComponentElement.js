@@ -355,11 +355,14 @@ class ComponentElement extends HTMLElement {
     }
 
     /**
-     * An instance bound method used to queue the render update cycle
+     * An instance bound method used to queue the render update cycle which is async (nextTick)
      * @type Function
      * @private
      */
-    get _queueUpdate() {
+    get queueUpdate() {
+        return this._queueUpdate;
+    }
+    get _queueUpdate() { // FIXME: remove this in favor of `queueUpdate()`
         throwIfThisIsPrototype(this);
 
         if (lazySetupUnderway) {
@@ -489,7 +492,7 @@ class ComponentElement extends HTMLElement {
      * in the customEvent.detail property
      *
      * @param {String} eventName
-     * @param {*} data
+     * @param {*} [data]
      * @param {EventInit} [eventInit=ComponentElement.eventInitOptions]
      *  Any other options for the CustomEvent initialization.
      *  See [Event.constructor]{@link http://devdocs.io/dom/event/event} for more.

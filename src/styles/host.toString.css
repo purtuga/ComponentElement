@@ -1,0 +1,10 @@
+:host {
+    display: inline-block;
+    position: relative;
+    box-sizing: border-box;
+    font-family: var(--theme-font-family, Arial);
+    color: var(--theme-color-fg, black);
+}
+* {
+    box-sizing: border-box;
+}
