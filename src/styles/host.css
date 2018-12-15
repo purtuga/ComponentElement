@@ -4,6 +4,7 @@
     box-sizing: border-box;
     font-family: var(--theme-font-family, Arial);
     color: var(--theme-color-fg, black);
+    font-size: var(--theme-font-size, 16px);
 }
 * {
     box-sizing: border-box;
