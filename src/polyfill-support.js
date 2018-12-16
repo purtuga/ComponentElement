@@ -3,13 +3,12 @@
 //--------------------------------------------------------------
 import {GLOBAL} from "@purtuga/common/src/jsutils/getGlobal"
 import {domFind} from "@purtuga/common/src/domutils/domFind.js"
-import {createElement, head} from "@purtuga/common/src/jsutils/runtime-aliases.js"
+import {createElement, head, isString} from "@purtuga/common/src/jsutils/runtime-aliases.js"
 import {getComponentClassState} from "./utils.js"
 
 //===========================================================================================
 export const supportsShadyCSS = () => !!GLOBAL.ShadyCSS;
 const removeElement = ele => ele.parentNode.removeChild(ele);
-const isString = s => "string" === typeof s;
 
 /**
  * if runtime env. supports shadowRoot
@@ -33,8 +32,9 @@ export function scopeCss (template, eleInstance) {
 }
 
 /**
- * Prepares the rendered content by removing style elements - since they were sopped
- * during `scopeCss`
+ * Prepares the rendered content by ensuring that the the first time the Element is
+ * rendered, that the styles are extracted and scoped on the page (vai ShadyCSS). From
+ * that point forward, the rendered content will only have its element css classes scoped.
  *
  * @param renderedContent
  * @param componentInstance
@@ -52,9 +52,10 @@ export function prepareRenderedContent(renderOutput, eleInstance) {
         // then do it now this occurs only once per Component.
         if (!templateEle) {
             ComponentClassState.templateEle = templateEle = createElement("template");
-            if (isRenderOutputString) {
-                templateEle.innerHTML = renderOutput;
+            if (isRenderOutputString || renderOutput.innerHTML) {
+                templateEle.innerHTML = renderOutput.innerHTML || renderOutput;
             } else {
+                // Maybe its a DocumentFragment
                 templateEle.appendChild(renderOutput.cloneNode(true));
             }
             scopeCss(templateEle , eleInstance);
@@ -68,6 +69,29 @@ export function prepareRenderedContent(renderOutput, eleInstance) {
         } else {
             view = renderOutput;
         }
+
+
+        // Need to prepare this DOM by calling ShadyCSS.prepareTemplateDom so
+        // that scoping classes are applied
+        // FIXME: prepareTemplateDom now seems to assume/expect the input to be an instance HTMLElement - they are doing a getAttribute() on it.
+        // let view2;
+        // if (!view.content) {
+        //     view2 = view;
+        //     view = document.createElement("div");
+        //     view.appendChild(view2);
+        //     view.content = view;
+        // }
+        //
+        // GLOBAL.ShadyCSS.prepareTemplateDom(view, eleInstance.constructor.tagName);
+        //
+        // // Remove <style> element
+        // domFind(view, "style").forEach(removeElement);
+        //
+        // if (view2) {
+        //     [].slice.call(view.childNodes).forEach(node => view2.appendChild(node));
+        //     view = view2;
+        // }
+
 
         // Need to prepare this DOM by calling ShadyCSS.prepareTemplateDom so
         // that scoping classes are applied
