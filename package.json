@@ -1,6 +1,6 @@
 {
     "name": "@purtuga/component-element",
-    "version": "2.4.0",
+    "version": "2.4.1",
     "description": "A Custom Element based component to build widgets for the web (not frameworks)",
     "main": "src/index.js",
     "module": "src/index.js",
