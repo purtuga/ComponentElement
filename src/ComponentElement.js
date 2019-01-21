@@ -20,7 +20,8 @@ import {
 import {
     styleComponentInstanceElement,
     prepareRenderedContent,
-    supportsNativeShadowDom
+    supportsNativeShadowDom,
+    reStyleComponentInstanceSubtree
 } from "./polyfill-support.js"
 
 //============================================================================
@@ -391,7 +392,10 @@ class ComponentElement extends HTMLElement {
     _setView(renderOutput) {
         let view = renderOutput;
 
-        if (!supportsNativeShadowDom()) {
+        // If ShadowDom NOT supported, then on first render, we prepare the template
+        // which means styles will get scoped using ShadyCSS.
+        if (!supportsNativeShadowDom() && !this._polyfillDone) {
+            this._polyfillDone = true;
             view = prepareRenderedContent(renderOutput, this) || renderOutput;
         }
 
@@ -401,6 +405,10 @@ class ComponentElement extends HTMLElement {
         } else {
             this.$ui.textContent = "";
             this.$ui.appendChild(view);
+        }
+
+        if (!supportsNativeShadowDom()) {
+            reStyleComponentInstanceSubtree(this);
         }
     }
 

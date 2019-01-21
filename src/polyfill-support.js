@@ -63,9 +63,8 @@ export function prepareRenderedContent(renderOutput, eleInstance) {
 
         // If the input was a string, then get a document fragment out of it
         if (isRenderOutputString) {
-            templateEle.innerHTML = renderOutput;
-            view = document.importNode(templateEle.content, true);
-            templateEle.textContent = "";
+            view = createElement("template");
+            view.innerHTML = renderOutput;
         } else {
             view = renderOutput;
         }
@@ -105,7 +104,12 @@ export function prepareRenderedContent(renderOutput, eleInstance) {
         // TODO: any momoization can happen here?
 
         // Remove <style> element
-        domFind(view, "style").forEach(removeElement);
+        domFind(view.content || view, "style").forEach(removeElement);
+
+        if (isRenderOutputString) {
+            view = document.importNode(view.content, true);
+        }
+
         return view;
     }
 }
